@@ -1,4 +1,5 @@
 schema = 2
+type = "image"
 name = "GPT-Image-1"
 description = "OpenAI image model for production generation, edits, and brand-safe visual workflows"
 family = "gpt-image"

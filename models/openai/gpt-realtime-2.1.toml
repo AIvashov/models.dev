@@ -1,4 +1,5 @@
 schema = 2
+type = "realtime"
 name = "GPT-Realtime-2.1"
 description = "Realtime speech-to-speech model with configurable reasoning, tool use, and robust voice-agent behavior"
 family = "gpt"

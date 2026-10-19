@@ -1,4 +1,5 @@
 schema = 2
+type = "transcription"
 name = "Whisper Large v3 Turbo"
 description = "Speech transcription model for accurate audio-to-text and captioning workflows"
 family = "whisper"

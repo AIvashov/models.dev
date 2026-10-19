@@ -391,7 +391,7 @@ export async function syncProvider<SourceModel>(
       : preserveDescription(withReasoningOptions, existing.get(relativePath)?.authored);
     const parsed = SyncedAuthoredModel.safeParse(stripUndefined({
       id: translated.id,
-      ...withDescription,
+      ...preserveType(withDescription, existing.get(relativePath)?.authored),
     }));
     if (!parsed.success) {
       parsed.error.cause = { provider: provider.id, path: relativePath };
@@ -689,6 +689,13 @@ export function preserveBaseModel(model: SyncedModel, existing: ExistingModel | 
     base_model: existing.base_model,
     base_model_omit: existing.base_model_omit,
   };
+}
+
+// Source APIs rarely report a model category, so a curated `type` is kept
+// unless the provider sets one.
+export function preserveType(model: SyncedModel, existing: ExistingModel | undefined): SyncedModel {
+  if (model.type !== undefined || existing?.type === undefined) return model;
+  return { ...model, type: existing.type } as SyncedModel;
 }
 
 export function preserveDescription(model: SyncedModel, existing: ExistingModel | undefined): SyncedModel {
