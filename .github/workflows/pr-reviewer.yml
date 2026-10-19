@@ -49,6 +49,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -euo pipefail
           mkdir .pr-review
@@ -62,7 +64,17 @@ jobs:
             head: .pull_request.head.ref
           }' "$GITHUB_EVENT_PATH" > .pr-review/pull-request.json
 
-          gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --patch --color never > .pr-review/diff.patch
+          if ! gh pr diff "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --patch --color never > .pr-review/diff.patch 2> "$RUNNER_TEMP/diff.err"; then
+            if ! grep -q "too_large" "$RUNNER_TEMP/diff.err"; then
+              cat "$RUNNER_TEMP/diff.err" >&2
+              exit 1
+            fi
+            # The API refuses diffs over 300 files. Build it with git instead; the
+            # PR head is only fetched for diffing, never checked out or run.
+            MERGE_BASE="$(gh api "repos/$GITHUB_REPOSITORY/compare/$BASE_SHA...$HEAD_SHA" --jq .merge_base_commit.sha)"
+            git fetch --no-tags --depth=1 origin "$MERGE_BASE" "$HEAD_SHA"
+            git diff --patch --no-color "$MERGE_BASE" "$HEAD_SHA" > .pr-review/diff.patch
+          fi
 
       - name: Run pull request reviewer
         env:
