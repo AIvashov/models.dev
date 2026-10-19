@@ -8,7 +8,7 @@ release_date = "2024-12-05"
 status = "deprecated"
 
 [modalities]
-input = ["text", "image", "application/pdf"]
+input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"]
 output = ["text"]
 
 [capabilities]
@@ -16,6 +16,11 @@ tools = { supported = true }
 reasoning = { supported = true, effort = ["low", "medium", "high"] }
 structured_output = true
 temperature = false
+system_updates = true
+effort_updates = false
+store = true
+cache = { supported = true, implicit = { min_tokens = 1_024 }, explicit = false }
+prompt_cache_key = true
 
 [limit]
 context = 200_000

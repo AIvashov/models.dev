@@ -8,13 +8,15 @@ open_weights = false
 release_date = "2025-10-16"
 
 [modalities]
-input = ["application/pdf", "image", "text"]
+input = ["application/pdf", "image/jpeg", "image/png", "image/gif", "image/webp", "text"]
 output = ["image", "text"]
 
 [capabilities]
 tools = { supported = false }
 reasoning = { supported = true }
 temperature = true
+top_p = true
+top_k = false
 
 [limit]
 context = 400_000

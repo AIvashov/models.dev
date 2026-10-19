@@ -15,6 +15,8 @@ output = ["text"]
 tools = { supported = true }
 reasoning = { supported = false }
 temperature = true
+top_p = true
+top_k = false
 
 [limit]
 context = 8_192

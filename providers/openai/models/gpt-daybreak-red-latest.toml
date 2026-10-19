@@ -8,6 +8,11 @@ description = "Alias for advanced cybersecurity models for authorized vulnerabil
 [capabilities]
 reasoning = { supported = true, effort = ["none", "low", "medium", "high", "xhigh", "max"] }
 structured_output = true
+system_updates = true
+effort_updates = false
+store = true
+cache = { supported = true, implicit = { min_tokens = 1_024 }, explicit = { ttl = ["30m"], max_breakpoints = 4, min_tokens = 1_024 } }
+prompt_cache_key = true
 
 [cost.text.input]
 price = 12.5

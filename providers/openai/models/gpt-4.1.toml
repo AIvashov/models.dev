@@ -7,7 +7,7 @@ knowledge = "2024-04"
 release_date = "2025-04-14"
 
 [modalities]
-input = ["text", "image", "application/pdf"]
+input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"]
 output = ["text"]
 
 [capabilities]
@@ -15,6 +15,12 @@ tools = { supported = true }
 reasoning = { supported = false }
 structured_output = true
 temperature = true
+system_updates = true
+effort_updates = false
+store = true
+cache = { supported = true, implicit = { ttl = ["24h"], min_tokens = 1_024 }, explicit = false }
+prompt_cache_key = true
+service_tier = ["priority"]
 
 [limit]
 context = 1_047_576

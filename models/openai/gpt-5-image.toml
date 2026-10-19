@@ -9,13 +9,15 @@ knowledge = "2024-10-01"
 release_date = "2025-10-14"
 
 [modalities]
-input = ["image", "text", "application/pdf"]
+input = ["image/jpeg", "image/png", "image/gif", "image/webp", "text", "application/pdf"]
 output = ["image", "text"]
 
 [capabilities]
 tools = { supported = false }
 reasoning = { supported = true }
 temperature = true
+top_p = true
+top_k = false
 
 [limit]
 context = 400_000

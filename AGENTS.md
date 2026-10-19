@@ -108,7 +108,7 @@ If the provider has a rich catalog API that can populate model data or authorita
 
 ## v2 migration (`schema = 2`)
 
-Labs and providers are moving to the v2 format one at a time. A file that starts with `schema = 2` is v2. Any other file is v1. Readers translate v2 files back to v1, so v1 and v2 files can `base_model` each other. Migrated so far: lab `anthropic` and provider `anthropic`.
+Labs and providers are moving to the v2 format one at a time. A file that starts with `schema = 2` is v2. Any other file is v1. Readers translate v2 files back to v1, so v1 and v2 files can `base_model` each other. Migrated so far: labs and providers `anthropic` and `openai`.
 
 v2 lab file (`models/<lab>/*.toml`). It only holds facts that are true on every host:
 
@@ -170,7 +170,7 @@ body = { speed = "fast" }
 - v2 has no `attachment`. The v1 output derives it from whether `modalities.input` includes anything besides text.
 - Use MIME types where the lab documents them (`image/png`, `application/pdf`). The v1 output collapses them to `image` and `pdf`.
 - `tool_call` becomes `capabilities.tools`, `reasoning` plus `reasoning_options` become `capabilities.reasoning`, and context tiers become `context > size` overrides.
-- The v1 output only gets the first cache-write TTL listed and the context tiers. A mode without a cost takes the base prices times the `service_tier` multiplier of the same name.
+- The v1 output only gets the first cache-write TTL listed and the context tiers. A mode without a cost takes the base prices times the multiplier for its service tier: the mode's `service_tier`, or its name when unset (OpenAI's `fast` mode sets `service_tier = "priority"`).
 - Sync writes v1 files, so it leaves v2 files alone. Update migrated providers by hand.
 - To migrate, run `bun packages/core/script/migrate-v2.ts <lab|provider> <id>`. The script fails if any file would change in the v1 output.
 

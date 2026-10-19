@@ -7,7 +7,7 @@ knowledge = "2025-12-01"
 release_date = "2026-04-23"
 
 [modalities]
-input = ["text", "image", "application/pdf"]
+input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp", "application/pdf"]
 output = ["text"]
 
 [capabilities]
@@ -15,6 +15,11 @@ tools = { supported = true }
 reasoning = { supported = true, effort = ["medium", "high", "xhigh"] }
 structured_output = true
 temperature = false
+system_updates = true
+effort_updates = false
+store = true
+cache = { supported = false }
+service_tier = ["flex"]
 
 [limit]
 context = 1_050_000
@@ -34,3 +39,7 @@ price = 180
 [[cost.text.output.overrides]]
 when = { context = { gt = 272_000 } }
 price = 270
+
+[[cost.multipliers]]
+when = { service_tier = { equals = "flex" } }
+factor = 0.5

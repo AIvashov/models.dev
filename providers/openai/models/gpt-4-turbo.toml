@@ -9,7 +9,7 @@ last_updated = "2024-04-09"
 status = "deprecated"
 
 [modalities]
-input = ["text", "image"]
+input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp"]
 output = ["text"]
 
 [capabilities]
@@ -17,6 +17,10 @@ tools = { supported = true }
 reasoning = { supported = false }
 structured_output = false
 temperature = true
+system_updates = true
+effort_updates = false
+store = true
+cache = { supported = false }
 
 [limit]
 context = 128_000
