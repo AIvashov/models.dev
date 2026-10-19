@@ -465,8 +465,16 @@ export async function syncProvider<SourceModel>(
     const current = existing.get(relativePath);
 
     if (current === undefined) {
+      if (writesV2) modelMetadata ??= await readModelMetadata(provider.modelsDir);
       const content = writesV2
-        ? v2Content(relativePath, file.header, undefined, undefined, file.model, v2Notices) ?? file.content
+        ? v2Content(
+            relativePath,
+            file.header,
+            undefined,
+            undefined,
+            withBaseModalities(file.model, modelMetadata ?? {}),
+            v2Notices,
+          ) ?? file.content
         : file.content;
       files.push({ status: "created", path: filePath });
       if (options.dryRun) {
@@ -485,8 +493,10 @@ export async function syncProvider<SourceModel>(
     }
 
     if (current.v2 !== undefined) {
+      modelMetadata ??= await readModelMetadata(provider.modelsDir);
+      const model = withBaseModalities(file.model, modelMetadata);
       const headerChanged = provider.authoritativeHeaders && current.header !== file.header;
-      if (!headerChanged && sameV1Model(current.authored, file.model)) {
+      if (!headerChanged && sameV1Model(current.authored, model)) {
         unchanged++;
         continue;
       }
@@ -495,7 +505,7 @@ export async function syncProvider<SourceModel>(
         provider.authoritativeHeaders ? file.header : current.header,
         current.v2,
         current.authored,
-        file.model,
+        model,
         v2Notices,
       );
       if (content === undefined || options.newOnly) {
@@ -645,6 +655,25 @@ function v2Content(
     console.warn(notice);
     return undefined;
   }
+}
+
+// v2 files list both modality sides, but a synced base_model override only lists
+// the side that differs from the lab. The other side is the lab's.
+function withBaseModalities<T extends z.infer<typeof SyncedAuthoredModel>>(
+  model: T,
+  modelMetadata: Record<string, Record<string, unknown>>,
+): T {
+  const modalities = model.modalities as { input?: string[]; output?: string[] } | undefined;
+  if (!("base_model" in model) || typeof model.base_model !== "string") return model;
+  if (modalities === undefined || (modalities.input && modalities.output)) return model;
+  const base = modelMetadata[model.base_model]?.modalities as typeof modalities;
+  return {
+    ...model,
+    modalities: {
+      input: modalities.input ?? base?.input,
+      output: modalities.output ?? base?.output,
+    },
+  };
 }
 
 export function preserveBaseModel(model: SyncedModel, existing: ExistingModel | undefined): SyncedModel {

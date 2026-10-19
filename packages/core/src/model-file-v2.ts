@@ -87,7 +87,13 @@ export function providerModelToV2(model: Record<string, any>): Doc {
 // capabilities, multipliers); changed prices are updated in place.
 export function patchModelV2(doc: Doc, before: Record<string, any>, after: Record<string, any>): Doc {
   const next = providerModelToV2(after);
-  const same = (...keys: string[]) => keys.every((key) => stable(before[key]) === stable(after[key]));
+  // `reasoning` may be inherited from the lab on one side, as in sameV1Model.
+  const same = (...keys: string[]) =>
+    keys.every(
+      (key) =>
+        (key === "reasoning" && (before[key] === undefined || after[key] === undefined)) ||
+        stable(before[key]) === stable(after[key]),
+    );
 
   if (same("modalities") && doc.modalities !== undefined) next.modalities = doc.modalities;
 
