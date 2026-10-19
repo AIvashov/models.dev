@@ -171,7 +171,7 @@ body = { speed = "fast" }
 - Use MIME types where the lab documents them (`image/png`, `application/pdf`). The v1 output collapses them to `image` and `pdf`.
 - `tool_call` becomes `capabilities.tools`, `reasoning` plus `reasoning_options` become `capabilities.reasoning`, and context tiers become `context > size` overrides.
 - The v1 output only gets the first cache-write TTL listed and the context tiers. A mode without a cost takes the base prices times the multiplier for its service tier: the mode's `service_tier`, or its name when unset (OpenAI's `fast` mode sets `service_tier = "priority"`).
-- Sync writes v1 files, so it leaves v2 files alone. Update migrated providers by hand.
+- Sync patches v2 files in place: it updates the fields it owns and keeps v2-only data (cache, tiers, multipliers, cache TTLs). Once a provider has v2 files, sync creates new ones in v2. If a patch can't reproduce the synced fields, sync leaves the file and reports a notice.
 - To migrate, run `bun packages/core/script/migrate-v2.ts <lab|provider> <id>`. The script fails if any file would change in the v1 output.
 
 ## Model fields

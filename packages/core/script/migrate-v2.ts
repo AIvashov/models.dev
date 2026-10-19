@@ -7,10 +7,14 @@
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
 
-import { toCostV2 } from "../src/generate-v2.js";
-import { ModelMetadata, ReasoningOption } from "../src/schema.js";
-import type { CostV2, CostWhenV2, InputCostV2, OutputCostV2 } from "../src/schema-v2.js";
-import { isSchemaV2, labModelV2ToV1, modelV2ToV1, roundPrice } from "../src/translate.js";
+import {
+  formatModelV2,
+  formatTomlValue,
+  providerModelToV2,
+  sameV1Model,
+} from "../src/model-file-v2.js";
+import { ModelMetadata } from "../src/schema.js";
+import { isSchemaV2, labModelV2ToV1, modelV2ToV1 } from "../src/translate.js";
 
 const root = path.join(import.meta.dirname, "..", "..", "..");
 const RAW_TABLES = /^\[\[(benchmarks|links|weights)\]\]\s*$/;
@@ -51,30 +55,17 @@ function migrateLab(text: string, toml: Record<string, unknown>, modelID: string
 }
 
 function migrateProvider(text: string, toml: Record<string, unknown>, modelID: string) {
-  const next = formatProviderModel(text, toml, modelID);
-  const before = normalizeV1({ ...toml, id: modelID });
-  const after = normalizeV1(
-    modelV2ToV1({ ...(Bun.TOML.parse(next) as Record<string, unknown>), id: modelID }),
-  );
-  // v2 capabilities.reasoning always states `supported`; v1 files inherit it from the lab.
-  if (before.reasoning === undefined) delete after.reasoning;
-  if (!isDeepStrictEqual(before, after)) {
-    console.error(JSON.stringify({ before, after }, null, 2));
+  const { header, body, tail } = splitFile(text);
+  if (body.some((line) => line.trim().startsWith("#")) || tail.length > 0) {
+    throw new Error(`${modelID}: comments or raw tables outside the header would be lost`);
+  }
+  const next = [...header, formatModelV2(providerModelToV2(toml))].join("\n");
+  const after = modelV2ToV1({ ...(Bun.TOML.parse(next) as Record<string, unknown>), id: modelID });
+  if (!sameV1Model(toml, after)) {
+    console.error(JSON.stringify({ before: toml, after }, null, 2));
     throw new Error(`Round trip changed ${modelID}`);
   }
   return next;
-}
-
-// v1 tiers may omit `type = "context"`, and the attachment flag is implied by modalities.
-function normalizeV1(model: Record<string, unknown>) {
-  const copy = structuredClone(model) as Record<string, any>;
-  for (const tier of copy.cost?.tiers ?? []) tier.tier = { type: "context", ...tier.tier };
-  if (copy.reasoning_options !== undefined) {
-    copy.reasoning_options = copy.reasoning_options.map((option: unknown) =>
-      ReasoningOption.parse(option),
-    );
-  }
-  return copy;
 }
 
 function formatLabModel(text: string, model: ModelMetadata) {
@@ -105,129 +96,6 @@ function formatLabModel(text: string, model: ModelMetadata) {
   out.push(...limitLines(model.limit!));
   if (tail.length > 0) out.push("", ...tail);
   return `${out.join("\n").trimEnd()}\n`;
-}
-
-function formatProviderModel(text: string, model: Record<string, any>, modelID: string) {
-  const { header, body, tail } = splitFile(text);
-  if (body.some((line) => line.trim().startsWith("#")) || tail.length > 0) {
-    throw new Error(`${modelID}: comments or raw tables outside the header would be lost`);
-  }
-  for (const field of ["interleaved", "provider"]) {
-    if (model[field] !== undefined) throw new Error(`${modelID}: ${field} has no v2 field yet`);
-  }
-
-  const out: string[] = [...header, "schema = 2"];
-  if (model.base_model !== undefined) out.push(`base_model = ${quote(model.base_model)}`);
-  if (model.base_model_omit !== undefined) {
-    out.push(`base_model_omit = ${inline(model.base_model_omit)}`);
-  }
-  out.push(...identityLines(model));
-  if (model.status !== undefined) out.push(`status = ${quote(model.status)}`);
-  if (model.modalities !== undefined) out.push(...modalityLines(model.modalities));
-
-  const capabilities: string[] = [];
-  if (model.tool_call !== undefined) capabilities.push(`tools = { supported = ${model.tool_call} }`);
-  if (model.reasoning !== undefined || model.reasoning_options !== undefined) {
-    capabilities.push(`reasoning = ${inline(reasoningSupport(model))}`);
-  }
-  for (const key of ["structured_output", "temperature"]) {
-    if (model[key] !== undefined) capabilities.push(`${key} = ${model[key]}`);
-  }
-  if (capabilities.length > 0) out.push("", "[capabilities]", ...capabilities);
-  if (model.limit !== undefined) out.push(...limitLines(model.limit));
-
-  const modes: Record<string, any> = model.experimental?.modes ?? {};
-  const multipliers: string[] = [];
-  const modeLines: string[] = [];
-  const tiers = new Map<string, number>();
-  for (const [name, mode] of Object.entries(modes)) {
-    const bodyTier = mode.provider?.body?.service_tier;
-    const tier = typeof bodyTier === "string" ? bodyTier : name;
-    const factor = mode.cost && model.cost && uniformFactor(model.cost, mode.cost);
-    if (factor !== undefined && tiers.get(tier) !== factor) {
-      if (tiers.has(tier)) throw new Error(`${modelID}: two prices for service tier ${tier}`);
-      tiers.set(tier, factor);
-      multipliers.push(
-        "",
-        "[[cost.multipliers]]",
-        `when = { service_tier = { equals = ${quote(tier)} } }`,
-        `factor = ${formatNumber(factor)}`,
-      );
-    }
-    modeLines.push("", `[experimental.modes.${name}]`);
-    if (tier !== name) modeLines.push(`service_tier = ${quote(tier)}`);
-    if (mode.provider?.body !== undefined) modeLines.push(`body = ${inline(mode.provider.body)}`);
-    if (mode.provider?.headers !== undefined) {
-      modeLines.push(`headers = ${inline(mode.provider.headers)}`);
-    }
-    // Prices that aren't a plain multiple of the base stay on the mode.
-    if (mode.cost !== undefined && factor === undefined) {
-      modeLines.push(...costLines(toCostV2(mode.cost), `experimental.modes.${name}.cost`));
-    }
-  }
-  if (model.cost !== undefined) out.push(...costLines(toCostV2(model.cost)));
-  out.push(...multipliers, ...modeLines);
-  return `${out.join("\n").trimEnd()}\n`;
-}
-
-function reasoningSupport(model: Record<string, any>) {
-  if (model.reasoning === false) return { supported: false };
-  const options = (model.reasoning_options ?? []).map((option: unknown) =>
-    ReasoningOption.parse(option),
-  );
-  const support: Record<string, unknown> = { supported: true };
-  for (const option of options) {
-    if (option.type === "toggle") support.toggle = true;
-    if (option.type === "effort") {
-      support.effort = option.values.map((value: string | null) => value ?? "default");
-    }
-    if (option.type === "budget_tokens") {
-      support.budget = Object.fromEntries(
-        Object.entries({ min: option.min, max: option.max }).filter(([, v]) => v !== undefined),
-      );
-    }
-  }
-  return support;
-}
-
-function uniformFactor(base: Record<string, number>, mode: Record<string, number>) {
-  const keys = Object.keys(base).filter((key) => key !== "tiers" && key !== "context_over_200k");
-  if (keys.length !== Object.keys(mode).length || base.input === undefined) return undefined;
-  const factor = mode.input! / base.input;
-  const rounded = roundPrice(factor);
-  return keys.every((key) => roundPrice(base[key]! * rounded) === mode[key]) ? rounded : undefined;
-}
-
-function costLines(cost: CostV2, prefix = "cost") {
-  const out: string[] = [];
-  for (const [modality, prices] of Object.entries(cost)) {
-    if (modality === "multipliers" || prices === undefined) continue;
-    const { input, output } = prices as { input?: InputCostV2; output?: OutputCostV2 };
-    for (const [direction, entry] of [
-      ["input", input],
-      ["output", output],
-    ] as const) {
-      if (entry === undefined) continue;
-      const { overrides, ...rest } = entry as Record<string, any>;
-      out.push("", `[${prefix}.${modality}.${direction}]`, ...tableLines(rest));
-      for (const override of overrides ?? []) {
-        const { when, ...fields } = override as { when: CostWhenV2 };
-        out.push(
-          "",
-          `[[${prefix}.${modality}.${direction}.overrides]]`,
-          `when = ${inline(when)}`,
-          ...tableLines(fields),
-        );
-      }
-    }
-  }
-  return out;
-}
-
-function tableLines(fields: Record<string, unknown>) {
-  return Object.entries(fields)
-    .filter(([, value]) => value !== undefined)
-    .map(([key, value]) => `${key} = ${inline(value)}`);
 }
 
 function identityLines(model: Record<string, any>) {
@@ -281,24 +149,12 @@ function splitFile(text: string) {
   return { header, body, tail };
 }
 
-function inline(value: unknown): string {
-  if (typeof value === "string") return quote(value);
-  if (typeof value === "number") return formatNumber(value);
-  if (typeof value === "boolean") return String(value);
-  if (Array.isArray(value)) return `[${value.map(inline).join(", ")}]`;
-  if (value !== null && typeof value === "object") {
-    const fields = Object.entries(value)
-      .filter(([, item]) => item !== undefined)
-      .map(([key, item]) => `${/^[A-Za-z0-9_-]+$/.test(key) ? key : quote(key)} = ${inline(item)}`);
-    return `{ ${fields.join(", ")} }`;
-  }
-  throw new Error(`Cannot write ${String(value)} as TOML`);
-}
+const inline = formatTomlValue;
 
 function quote(value: string) {
   return JSON.stringify(value);
 }
 
 function formatNumber(n: number) {
-  return Number.isInteger(n) ? String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "_") : String(n);
+  return formatTomlValue(n);
 }
