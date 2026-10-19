@@ -4,6 +4,7 @@
 # Converse effort: additionalModelRequestFields.reasoning.effort = none|low|medium|high|xhigh|max (Bedrock's own validation error lists these).
 # Live Converse check 2026-09-22 (eu-west-1, global profile): tool call + tool-result round trip; effort low/xhigh/max accepted.
 base_model = "openai/gpt-6-luna"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 name = "GPT-6 Luna (Global)"
 

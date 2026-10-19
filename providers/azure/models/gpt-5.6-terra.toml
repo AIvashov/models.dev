@@ -1,6 +1,7 @@
 # Fast mode is Azure priority processing (Global Standard): https://azure.microsoft.com/en-us/pricing/details/azure-openai/ and https://learn.microsoft.com/en-us/azure/foundry/openai/concepts/priority-processing
 # Pricing: https://developers.openai.com/api/docs/pricing
 base_model = "openai/gpt-5.6-terra"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

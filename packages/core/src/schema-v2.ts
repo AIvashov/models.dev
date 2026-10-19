@@ -648,6 +648,8 @@ export type CostV2 = z.infer<typeof CostV2>;
 
 export const ExperimentalModeV2 = z
   .object({
+    // The service tier this mode runs on, when it differs from the mode name.
+    service_tier: ServiceTierV2.optional(),
     cost: CostV2.optional(),
     capabilities: CapabilitiesOverrideV2.optional(),
     body: z.record(JsonValue).optional(),

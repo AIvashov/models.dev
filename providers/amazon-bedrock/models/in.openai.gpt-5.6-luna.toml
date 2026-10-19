@@ -6,6 +6,7 @@
 # Converse effort: additionalModelRequestFields.reasoning.effort = none|low|medium|high|xhigh|max; reasoning_effort is rejected.
 # Live check 2026-09-09 (ap-south-1): nested reasoning.effort=none returns 200.
 base_model = "openai/gpt-5.6-luna"
+structured_output = true
 name = "GPT-5.6 Luna (India)"
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 

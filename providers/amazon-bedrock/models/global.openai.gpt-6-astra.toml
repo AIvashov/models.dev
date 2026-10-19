@@ -6,6 +6,7 @@
 # Live check 2026-09-09 (us-east-1): outputConfig.textFormat enforces JSON schema despite a conflicting user instruction.
 # Effort levels match OpenAI-native Astra (Low..Max, no "none"): https://developers.openai.com/api/docs/models/gpt-6-astra
 base_model = "openai/gpt-6-astra"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high", "xhigh", "max"] }]
 base_model_omit = ["cost.context_over_200k", "experimental.modes.fast"]
 name = "GPT-6 Astra (Global)"

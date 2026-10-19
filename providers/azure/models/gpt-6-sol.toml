@@ -1,6 +1,7 @@
 # Availability: https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure-region-availability
 # Rates: https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/
 base_model = "openai/gpt-6-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

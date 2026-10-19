@@ -1,5 +1,6 @@
 # Pricing: https://ai-gateway.vercel.sh/v1/models (2026-09-04), upper band starts at 272,001 prompt tokens
 base_model = "openai/gpt-6-astra"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

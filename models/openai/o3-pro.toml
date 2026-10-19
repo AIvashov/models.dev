@@ -1,23 +1,23 @@
+schema = 2
 name = "o3-pro"
 description = "High-effort o3 tier for difficult technical reasoning and careful answers"
 family = "o-pro"
-release_date = "2025-06-10"
-last_updated = "2025-06-10"
-attachment = true
-reasoning = true
-temperature = false
-tool_call = true
-structured_output = true
-knowledge = "2024-05"
 open_weights = false
-
-[limit]
-context = 200_000
-output = 100_000
+knowledge = "2024-05"
+release_date = "2025-06-10"
 
 [modalities]
 input = ["text", "image"]
 output = ["text"]
+
+[capabilities]
+tools = { supported = true }
+reasoning = { supported = true }
+temperature = false
+
+[limit]
+context = 200_000
+output = 100_000
 
 [[benchmarks]]
 name = "Aider Polyglot"

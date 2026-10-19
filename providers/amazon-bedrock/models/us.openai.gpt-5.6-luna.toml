@@ -6,6 +6,7 @@
 # Live check 2026-09-09 (us-east-1): outputConfig.textFormat enforces JSON schema despite a conflicting user instruction.
 # Effort levels incl. "none" verified on the Global twin: global.openai.gpt-5.6-luna.toml
 base_model = "openai/gpt-5.6-luna"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 base_model_omit = ["cost.context_over_200k", "experimental.modes.fast"]
 name = "GPT-5.6 Luna (US)"

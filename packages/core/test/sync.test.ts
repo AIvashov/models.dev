@@ -4162,6 +4162,7 @@ test("filters unknown Merge Gateway modalities without rejecting the catalog", (
 
   expect(synced).toEqual({
     base_model: "openai/gpt-5.6-sol",
+    structured_output: true,
     cost: {
       input: 5,
       output: 30,
@@ -4175,6 +4176,7 @@ test("factors Merge Gateway GPT-5.6 Sol against canonical metadata", () => {
 
   expect(model).toEqual({
     base_model: "openai/gpt-5.6-sol",
+    structured_output: true,
     cost: {
       input: 5,
       output: 30,
@@ -4428,6 +4430,7 @@ test("merges authoritative Merge Gateway cache pricing field by field", () => {
 
   expect(model).toEqual({
     base_model: "openai/gpt-5.6-sol",
+    structured_output: true,
     cost: {
       input: 3.75,
       output: 22.5,

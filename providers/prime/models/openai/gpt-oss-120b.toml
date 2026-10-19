@@ -2,6 +2,7 @@
 # Prices are USD per million tokens; lab facts are inherited via base_model.
 # Effort: top-level reasoning_effort = high|medium|low.
 base_model = "openai/gpt-oss-120b"
+structured_output = true
 name = "gpt-oss-120b"
 
 [[reasoning_options]]

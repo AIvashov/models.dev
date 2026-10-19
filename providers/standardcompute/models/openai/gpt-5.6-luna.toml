@@ -4,6 +4,7 @@
 # (price listing: https://openrouter.ai/api/v1/models/openai/gpt-5.6-luna/endpoints, accessed 2026-10-16).
 # Context tiers start at 272,000 prompt tokens.
 base_model = "openai/gpt-5.6-luna"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 
 [interleaved]

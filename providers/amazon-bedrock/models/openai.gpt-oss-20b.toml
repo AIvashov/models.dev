@@ -7,6 +7,7 @@
 # A high-effort response generated 100000 output tokens (hit max_output_tokens);
 # a 129575-token prompt completed, above the old 128000 context.
 base_model = "openai/gpt-oss-20b"
+structured_output = true
 name = "gpt-oss-20b"
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 

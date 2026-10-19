@@ -7,6 +7,7 @@
 # A high-effort response generated 100000 output tokens (hit max_output_tokens).
 # A 130975-token prompt completed; 131175 failed with "max_model_len 131072".
 base_model = "openai/gpt-oss-120b"
+structured_output = true
 name = "gpt-oss-120b"
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 

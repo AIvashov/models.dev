@@ -3,6 +3,7 @@
 # https://developers.cloudflare.com/workers-ai/models/gpt-oss-120b/sync-input.json (accessed 2026-06-25)
 
 base_model = "openai/gpt-oss-120b"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

@@ -2,6 +2,7 @@
 # Effort: reasoning_effort = low|medium|high (native baseline). thinking.type=disabled and effort=none do not suppress reasoning.
 # The inventory's image-input label is not supported by the underlying text-only model.
 base_model = "openai/gpt-oss-120b"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 
 [interleaved]

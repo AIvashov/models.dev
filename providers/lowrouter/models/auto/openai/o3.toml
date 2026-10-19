@@ -14,6 +14,7 @@
 # xhigh was also accepted on the live check, but OpenAI documents only low, medium, high for this model
 # (see providers/openai), so it is not listed as a distinct level.
 base_model = "openai/o3"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

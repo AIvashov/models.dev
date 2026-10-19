@@ -6,6 +6,7 @@
 # - peers: providers/openai/models/gpt-5-mini.toml, providers/ofox/models/openai/gpt-5.5.toml
 base_model = "openai/gpt-5-mini"
 base_model_omit = ["limit.input"]
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

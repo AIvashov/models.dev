@@ -15,6 +15,7 @@
 # none, minimal, xhigh were also accepted by this host, which passes the field through; gpt-oss documents only
 # low, medium, high, so they are not listed as distinct levels.
 base_model = "openai/gpt-oss-20b"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

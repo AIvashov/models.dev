@@ -7,6 +7,7 @@
 # billing_config context tier at 272000 tokens (USD/MTok): input=4, output=15, cache_read=0.2, cache_write=5
 # Effort: $.reasoning_effort = low|medium|high|xhigh|max on /v1/chat/completions.
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 [[reasoning_options]]
 type = "effort"
 values = ["low", "medium", "high", "xhigh", "max"]

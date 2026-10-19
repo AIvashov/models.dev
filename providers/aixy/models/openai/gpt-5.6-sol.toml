@@ -4,6 +4,7 @@
 # Long-context rates apply to the full request above 272K input tokens.
 # Promotional pricing is available at least through 2026-11-21.
 base_model = "openai/gpt-5.6-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

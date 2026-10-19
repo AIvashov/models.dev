@@ -6,6 +6,7 @@
 # (stopReason max_tokens), accepts maxTokens=128000 and rejects larger values, and processed a
 # 129575-token prompt; the backend reports "maximum context length (131072)".
 base_model = "openai/gpt-oss-20b"
+structured_output = true
 name = "gpt-oss-20b"
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 

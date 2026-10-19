@@ -11,6 +11,7 @@
 # 2026-10-12 was disclosed as unsupported_on_this_path and the request served without it, so there is
 # no caller control (https://lowrouter.ai/docs/guides/request-parameters).
 base_model = "openai/gpt-oss-safeguard-20b"
+structured_output = true
 reasoning_options = []
 
 [cost]

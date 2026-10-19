@@ -4,6 +4,7 @@
 # - OpenAI model docs (pricing/reasoning): https://developers.openai.com/api/docs/models/gpt-6.1-sol
 # Ofox catalog shows flat list pricing with no provider_price override and no context tier, so no [[cost.tiers]].
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

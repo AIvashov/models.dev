@@ -1,5 +1,6 @@
 # Live endpoint and pricing: https://openrouter.ai/api/v1/models/openai/gpt-6.1-sol/endpoints
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

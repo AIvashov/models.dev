@@ -10,7 +10,7 @@ import { isDeepStrictEqual } from "node:util";
 import { toCostV2 } from "../src/generate-v2.js";
 import { ModelMetadata, ReasoningOption } from "../src/schema.js";
 import type { CostV2, CostWhenV2, InputCostV2, OutputCostV2 } from "../src/schema-v2.js";
-import { isSchemaV2, labModelV2ToV1, modelV2ToV1 } from "../src/translate.js";
+import { isSchemaV2, labModelV2ToV1, modelV2ToV1, roundPrice } from "../src/translate.js";
 
 const root = path.join(import.meta.dirname, "..", "..", "..");
 const RAW_TABLES = /^\[\[(benchmarks|links|weights)\]\]\s*$/;
@@ -139,23 +139,30 @@ function formatProviderModel(text: string, model: Record<string, any>, modelID: 
   const modes: Record<string, any> = model.experimental?.modes ?? {};
   const multipliers: string[] = [];
   const modeLines: string[] = [];
+  const tiers = new Map<string, number>();
   for (const [name, mode] of Object.entries(modes)) {
+    const bodyTier = mode.provider?.body?.service_tier;
+    const tier = typeof bodyTier === "string" ? bodyTier : name;
     const factor = mode.cost && model.cost && uniformFactor(model.cost, mode.cost);
-    if (factor !== undefined) {
+    if (factor !== undefined && tiers.get(tier) !== factor) {
+      if (tiers.has(tier)) throw new Error(`${modelID}: two prices for service tier ${tier}`);
+      tiers.set(tier, factor);
       multipliers.push(
         "",
         "[[cost.multipliers]]",
-        `when = { service_tier = { equals = ${quote(name)} } }`,
+        `when = { service_tier = { equals = ${quote(tier)} } }`,
         `factor = ${formatNumber(factor)}`,
       );
     }
     modeLines.push("", `[experimental.modes.${name}]`);
-    if (mode.cost !== undefined && factor === undefined) {
-      throw new Error(`${modelID}: mode ${name} cost is not a uniform multiple of the base cost`);
-    }
+    if (tier !== name) modeLines.push(`service_tier = ${quote(tier)}`);
     if (mode.provider?.body !== undefined) modeLines.push(`body = ${inline(mode.provider.body)}`);
     if (mode.provider?.headers !== undefined) {
       modeLines.push(`headers = ${inline(mode.provider.headers)}`);
+    }
+    // Prices that aren't a plain multiple of the base stay on the mode.
+    if (mode.cost !== undefined && factor === undefined) {
+      modeLines.push(...costLines(toCostV2(mode.cost), `experimental.modes.${name}.cost`));
     }
   }
   if (model.cost !== undefined) out.push(...costLines(toCostV2(model.cost)));
@@ -187,10 +194,11 @@ function uniformFactor(base: Record<string, number>, mode: Record<string, number
   const keys = Object.keys(base).filter((key) => key !== "tiers" && key !== "context_over_200k");
   if (keys.length !== Object.keys(mode).length || base.input === undefined) return undefined;
   const factor = mode.input! / base.input;
-  return keys.every((key) => base[key]! * factor === mode[key]) ? factor : undefined;
+  const rounded = roundPrice(factor);
+  return keys.every((key) => roundPrice(base[key]! * rounded) === mode[key]) ? rounded : undefined;
 }
 
-function costLines(cost: CostV2) {
+function costLines(cost: CostV2, prefix = "cost") {
   const out: string[] = [];
   for (const [modality, prices] of Object.entries(cost)) {
     if (modality === "multipliers" || prices === undefined) continue;
@@ -201,12 +209,12 @@ function costLines(cost: CostV2) {
     ] as const) {
       if (entry === undefined) continue;
       const { overrides, ...rest } = entry as Record<string, any>;
-      out.push("", `[cost.${modality}.${direction}]`, ...tableLines(rest));
+      out.push("", `[${prefix}.${modality}.${direction}]`, ...tableLines(rest));
       for (const override of overrides ?? []) {
         const { when, ...fields } = override as { when: CostWhenV2 };
         out.push(
           "",
-          `[[cost.${modality}.${direction}.overrides]]`,
+          `[[${prefix}.${modality}.${direction}.overrides]]`,
           `when = ${inline(when)}`,
           ...tableLines(fields),
         );

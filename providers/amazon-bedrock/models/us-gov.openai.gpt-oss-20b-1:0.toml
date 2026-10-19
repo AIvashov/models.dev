@@ -3,6 +3,7 @@
 # Geo inference uses source-region pricing with no routing surcharge: https://docs.aws.amazon.com/bedrock/latest/userguide/cross-region-inference.html
 # Effort: additionalModelRequestFields.reasoning_effort = low|medium|high; https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-openai.html
 base_model = "openai/gpt-oss-20b"
+structured_output = true
 name = "gpt-oss-20b (GovCloud)"
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 

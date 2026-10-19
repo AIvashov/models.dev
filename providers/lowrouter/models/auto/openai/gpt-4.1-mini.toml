@@ -6,6 +6,7 @@
 # Another route can serve a request (the key's routing policy, or a failover); usage.cost on the
 # response carries the amount debited.
 base_model = "openai/gpt-4.1-mini"
+structured_output = true
 
 [cost]
 input = 0.4

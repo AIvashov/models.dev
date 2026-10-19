@@ -1,6 +1,7 @@
 # Toggle: reasoning.enabled = true|false
 # https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
 base_model = "openai/o3-mini"
+structured_output = true
 attachment = true
 
 [[reasoning_options]]

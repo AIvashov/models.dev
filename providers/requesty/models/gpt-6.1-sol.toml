@@ -1,6 +1,7 @@
 # Managed catalog and rates: https://router.requesty.ai/v1/models/managed
 # Reasoning controls: https://docs.requesty.ai/features/reasoning
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

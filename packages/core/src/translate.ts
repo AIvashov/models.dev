@@ -107,8 +107,7 @@ export function modelV2ToV1(
     temperature: capabilities.temperature,
     knowledge: model.knowledge,
     release_date: model.release_date,
-    last_updated:
-      model.last_updated ?? (model.base_model === undefined ? model.release_date : undefined),
+    last_updated: model.last_updated ?? model.release_date,
     modalities: model.modalities && {
       input,
       output: toV1Modalities(model.modalities.output),
@@ -200,7 +199,7 @@ function firstPrice(write: number | Partial<Record<string, number>> | undefined)
 }
 
 // v1 modes carry their own prices. A v2 mode without a cost takes the base prices
-// scaled by the `service_tier` multiplier with the same name.
+// scaled by the multiplier for its service tier (the mode name by default).
 function toV1Experimental(
   model: AuthoredModelV2,
   cost: Record<string, unknown> | undefined,
@@ -210,11 +209,12 @@ function toV1Experimental(
   return {
     modes: Object.fromEntries(
       Object.entries(modes).map(([name, mode]) => {
+        const tier = mode.service_tier ?? name;
         const factor = model.cost?.multipliers?.find((multiplier) => {
           const when = multiplier.when as Record<string, unknown>;
           return (
             Object.keys(when).length === 1 &&
-            (when.service_tier as { equals?: unknown } | undefined)?.equals === name
+            (when.service_tier as { equals?: unknown } | undefined)?.equals === tier
           );
         })?.factor;
         const modeCost =
@@ -241,7 +241,7 @@ function scaleCost(cost: Record<string, unknown>, factor: number) {
   return Object.fromEntries(
     Object.entries(cost)
       .filter(([key]) => key !== "tiers")
-      .map(([key, value]) => [key, (value as number) * factor]),
+      .map(([key, value]) => [key, roundPrice((value as number) * factor)]),
   );
 }
 
@@ -261,4 +261,9 @@ function withoutUndefined(value: Record<string, unknown>) {
   return Object.fromEntries(
     Object.entries(value).filter(([, item]) => item !== undefined),
   );
+}
+
+// Drops float noise from scaled prices (0.025 * 1.8 = 0.045000000000000005).
+export function roundPrice(price: number) {
+  return Math.round(price * 1e10) / 1e10;
 }

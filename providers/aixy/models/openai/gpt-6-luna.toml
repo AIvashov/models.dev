@@ -3,6 +3,7 @@
 # https://developers.openai.com/api/docs/models/gpt-6-luna
 # Long-context rates apply to the full request above 272K input tokens.
 base_model = "openai/gpt-6-luna"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

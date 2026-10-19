@@ -2,6 +2,7 @@
 # Prices are USD per million tokens; lab facts are inherited via base_model.
 # Generic file input is omitted; it does not imply PDF support.
 base_model = "openai/gpt-4o-mini"
+structured_output = true
 name = "GPT-4o-mini"
 
 [cost]

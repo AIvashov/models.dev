@@ -1,6 +1,7 @@
 # Both global and us-central1 Vertex MaaS routes publish 131,072 max output.
 # https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/openai/gpt-oss-120b
 base_model = "openai/gpt-oss-120b"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 
 [cost]

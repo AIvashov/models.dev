@@ -4,6 +4,7 @@
 # - OpenAI model docs (reasoning effort + list pricing): https://developers.openai.com/api/docs/models/gpt-6-sol
 # Ofox provider_price is the -20% promo override ($1.6/$8 + cache vs $2/$10 list); flat with no >=272k context tier in the catalog, so no [[cost.tiers]].
 base_model = "openai/gpt-6-sol"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

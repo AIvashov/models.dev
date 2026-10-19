@@ -1,5 +1,6 @@
 # Served AI_COMPLETE limits: https://docs.snowflake.com/en/user-guide/snowflake-cortex/aisql-regional-availability#model-restrictions
 base_model = "openai/gpt-5-nano"
+structured_output = true
 status = "beta"
 
 reasoning_options = [{ type = "effort", values = ["none", "minimal", "low", "medium", "high"] }]

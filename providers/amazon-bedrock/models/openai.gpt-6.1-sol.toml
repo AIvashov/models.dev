@@ -7,6 +7,7 @@
 # Ultrafast is 6x Standard per Bedrock Astra card and OpenAI ultrafast table: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-6-astra.html and https://developers.openai.com/api/docs/pricing?latest-pricing=ultrafast
 # Columns: input / 30m cache write / cache read / output (USD per 1M tokens)
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

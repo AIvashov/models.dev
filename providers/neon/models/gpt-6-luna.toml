@@ -3,6 +3,7 @@
 # "'reasoning_effort' does not support 'max' with this model. Supported values are: 'none', 'low', 'medium', 'high', and 'xhigh'".
 # Measured 2026-10-13.
 base_model = "openai/gpt-6-luna"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh"] }]
 
 [cost]

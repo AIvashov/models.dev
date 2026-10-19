@@ -5,6 +5,7 @@
 # Effort: reasoning_effort = low|medium|high|xhigh (OpenAI Codex Max / established relay peers)
 base_model = "openai/gpt-5.1-codex-max"
 base_model_omit = ["limit.input"]
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

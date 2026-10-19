@@ -1,5 +1,6 @@
 # Pricing: Azure Retail Prices API, Global Standard ("6-sol ShortCo/LongCo ... Std Gl" meters, effective 2026-09-01): https://azure.microsoft.com/en-us/pricing/details/cognitive-services/openai-service/
 base_model = "openai/gpt-6-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["none", "low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

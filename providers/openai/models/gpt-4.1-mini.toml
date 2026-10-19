@@ -1,29 +1,36 @@
+schema = 2
 name = "GPT-4.1 mini"
 description = "Affordable GPT-4.1 lane for fast coding help and structured extraction"
 family = "gpt-mini"
-release_date = "2025-04-14"
-last_updated = "2025-04-14"
-attachment = true
-reasoning = false
-temperature = true
-knowledge = "2024-04"
-tool_call = true
-structured_output = true
 open_weights = false
-
-[cost]
-input = 0.40
-output = 1.60
-cache_read = 0.10
-
-[limit]
-context = 1047576
-output = 32768
+knowledge = "2024-04"
+release_date = "2025-04-14"
 
 [modalities]
-input = ["text", "image", "pdf"]
+input = ["text", "image", "application/pdf"]
 output = ["text"]
 
+[capabilities]
+tools = { supported = true }
+reasoning = { supported = false }
+structured_output = true
+temperature = true
+
+[limit]
+context = 1_047_576
+output = 32_768
+
+[cost.text.input]
+price = 0.4
+cache = { read = 0.1 }
+
+[cost.text.output]
+price = 1.6
+
+[[cost.multipliers]]
+when = { service_tier = { equals = "priority" } }
+factor = 1.75
+
 [experimental.modes.fast]
-cost = { input = 0.70, output = 2.80, cache_read = 0.175 }
-provider = { body = { service_tier = "priority" } }
+service_tier = "priority"
+body = { service_tier = "priority" }

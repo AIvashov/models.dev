@@ -15,6 +15,7 @@
 # a tool call came back with reasoning_effort = high and nothing disclosed).
 # Long-context tier over 272,000 tokens copied from OpenAI's published pricing (same as providers/openai).
 base_model = "openai/gpt-5.6-luna"
+structured_output = true
 
 [[reasoning_options]]
 type = "effort"

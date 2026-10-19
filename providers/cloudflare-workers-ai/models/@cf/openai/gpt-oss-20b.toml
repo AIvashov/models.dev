@@ -2,6 +2,7 @@
 # OpenAI-compatible reasoning field was verified. No token budget is documented.
 # https://developers.cloudflare.com/workers-ai/models/gpt-oss-20b/sync-input.json (accessed 2026-06-25)
 base_model = "openai/gpt-oss-20b"
+structured_output = true
 description = "Open-weight GPT model for self-hosted reasoning and instruction-following workloads"
 
 [[reasoning_options]]

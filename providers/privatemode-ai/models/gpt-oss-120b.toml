@@ -6,6 +6,7 @@
 # EUR/MTok: input 0.20 / output 0.65 / cached input 0.04
 # Effort: OpenAI-style reasoning_effort on this host (low|medium|high).
 base_model = "openai/gpt-oss-120b"
+structured_output = true
 name = "gpt-oss-120b"
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 

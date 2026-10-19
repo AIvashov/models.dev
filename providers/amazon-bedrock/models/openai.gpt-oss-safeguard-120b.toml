@@ -5,6 +5,7 @@
 # https://docs.aws.amazon.com/bedrock/latest/userguide/model-parameters-openai.html
 # Live Converse check 2026-09-09 (us-east-1): reasoning_effort=low returns reasoningContent.
 base_model = "openai/gpt-oss-safeguard-120b"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high"] }]
 
 [cost]

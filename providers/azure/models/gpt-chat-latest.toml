@@ -1,6 +1,7 @@
 # Latest 2026-08-06 deployment: 400K context, 272K input, 128K output.
 # https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure#gpt-chat-latest
 base_model = "openai/gpt-5.5-instant"
+structured_output = true
 name = "GPT Chat Latest"
 status = "beta"
 temperature = false

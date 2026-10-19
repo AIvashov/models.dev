@@ -5,6 +5,7 @@
 # https://azure.microsoft.com/en-us/blog/gpt-6-astra-sol-and-luna-for-production-agents-in-microsoft-foundry/
 # https://developers.openai.com/api/docs/models/gpt-6.1-sol
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high", "xhigh", "max"] }]
 
 [cost]

@@ -6,6 +6,7 @@
 # Ultrafast is 6x Standard per Bedrock Astra card and OpenAI ultrafast table: https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-openai-gpt-6-astra.html and https://developers.openai.com/api/docs/pricing?latest-pricing=ultrafast
 # Converse input is text+image per AWS card and OpenAI model docs; overrides lab pdf.
 base_model = "openai/gpt-6.1-sol"
+structured_output = true
 reasoning_options = [{ type = "effort", values = ["low", "medium", "high", "xhigh", "max"] }]
 name = "GPT-6.1 Sol (US)"
 
