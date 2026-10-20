@@ -1,0 +1,17 @@
+# Sources: https://openrouter.ai/nousresearch/deephermes-3-mistral-24b-preview (context 32,768; function calling + structured JSON mode + reasoning toggle via system prompt)
+# Pricing $0.02 in / $0.10 out per 1M tokens: https://www.typingmind.com/guide/openrouter/deephermes-3-mistral-24b-preview, https://portkey.ai/models/openrouter/nousresearch%2Fdeephermes-3-mistral-24b-preview, https://pricepertoken.com/pricing-page/model/nousresearch-deephermes-3-mistral-24b-preview (issue's $0.18/M not used; current sources agree on $0.02/$0.10)
+# Toggle: reasoning.enabled = true|false
+# https://openrouter.ai/docs/guides/best-practices/reasoning-tokens
+schema = 2
+base_model = "nousresearch/deephermes-3-mistral-24b-preview"
+
+[capabilities]
+reasoning = { supported = true, toggle = true }
+structured_output = true
+effort_updates = false
+
+[cost.text.input]
+price = 0.02
+
+[cost.text.output]
+price = 0.1

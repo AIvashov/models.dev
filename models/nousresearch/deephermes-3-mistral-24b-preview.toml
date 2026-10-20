@@ -1,0 +1,33 @@
+# Sources:
+# - https://huggingface.co/NousResearch/DeepHermes-3-Mistral-24B-Preview (hybrid reasoning toggled by system prompt; function calling + JSON/structured output; Apache-2.0; base Mistral-Small-24B-Base-2501; 32k context)
+# - Release 2025-03-13: https://www.linkedin.com/posts/nousresearch_deephermes-a-nousresearch-collection-activity-7305990834552745984-WCnc and https://huggingface.co/collections/NousResearch/deephermes (Updated Mar 13, 2025)
+# - https://openrouter.ai/nousresearch/deephermes-3-mistral-24b-preview (context 32,768; cutoff Apr 2024 / Apr 30, 2024; chat + function calling + reasoning)
+# - Base context 32k: https://huggingface.co/mistralai/Mistral-Small-24B-Base-2501
+# Sampling: open weights; temperature/top_p/top_k are standard sampling controls (HF example uses temperature 0.8)
+schema = 2
+name = "DeepHermes 3 Mistral 24B Preview"
+description = "Hybrid reasoning instruction model based on Mistral-Small-24B for chat, function calling, and deep reasoning"
+family = "deephermes"
+open_weights = true
+knowledge = "2024-04-30"
+release_date = "2025-03-13"
+license = "Apache-2.0"
+
+[modalities]
+input = ["text"]
+output = ["text"]
+
+[capabilities]
+tools = { supported = true }
+reasoning = { supported = true }
+temperature = true
+top_p = true
+top_k = true
+
+[limit]
+context = 32_768
+output = 32_768
+
+[[weights]]
+label = "Hugging Face"
+url = "https://huggingface.co/NousResearch/DeepHermes-3-Mistral-24B-Preview"
