@@ -122,6 +122,111 @@ describe("v2 catalog generation", () => {
         },
       },
     });
+    expect(translated.api as Record<string, unknown>).toEqual({
+      responses: {
+        base_url: "https://api.openai.com/v1",
+        sdk: {
+          aisdk: "@ai-sdk/openai",
+          opencodeai: "@opencode/ai/providers/openai/responses",
+        },
+      },
+    });
+  });
+
+  const host = (id: string, npm: string, api?: string): Provider => ({
+    id,
+    name: id,
+    doc: "https://example.com",
+    env: [],
+    npm,
+    ...(api !== undefined ? { api } : {}),
+    models: {},
+  });
+  const model = (id: string, type?: Model["type"]): Model => ({
+    id,
+    name: id,
+    description: id,
+    ...(type !== undefined ? { type } : {}),
+    attachment: false,
+    reasoning: false,
+    tool_call: false,
+    release_date: "2026-01-01",
+    last_updated: "2026-01-01",
+    modalities: { input: ["text"], output: ["text"] },
+    open_weights: false,
+    limit: { context: 8192, output: 4096 },
+  });
+
+  const api = (m: Model, p: Provider, authored?: Parameters<typeof toModelV2>[2]) =>
+    toModelV2(m, p, authored).api as Record<string, unknown>;
+
+  test("publishes every authored API table in file order", () => {
+    const published = api(
+      model("glm-5"),
+      host("zai", "@ai-sdk/openai-compatible", "https://api.z.ai/api/paas/v4"),
+      {
+        "chat-completions": { compatibility: { reasoning_field: "reasoning_content" } },
+        messages: {
+          base_url: "https://api.z.ai/api/anthropic/v1",
+          sdk: { aisdk: "@ai-sdk/anthropic" },
+        },
+      },
+    );
+
+    expect(Object.keys(published)).toEqual(["chat-completions", "messages"]);
+    expect(published).toEqual({
+      "chat-completions": {
+        base_url: "https://api.z.ai/api/paas/v4",
+        sdk: {
+          aisdk: "@ai-sdk/openai-compatible",
+          opencodeai: "@opencode/ai/providers/zai/chat",
+        },
+        compatibility: { reasoning_field: "reasoning_content" },
+      },
+      messages: {
+        base_url: "https://api.z.ai/api/anthropic/v1",
+        sdk: {
+          aisdk: "@ai-sdk/anthropic",
+          opencodeai: "@opencode/ai/providers/anthropic",
+        },
+      },
+    });
+  });
+
+  test("picks non-chat protocols from the model type on checked hosts", () => {
+    const openai = host("openai", "@ai-sdk/openai");
+    const google = host("google", "@ai-sdk/google");
+    const openrouter = host(
+      "openrouter",
+      "@openrouter/ai-sdk-provider",
+      "https://openrouter.ai/api/v1",
+    );
+    const protocols = (m: Model, p: Provider) => Object.keys(api(m, p));
+
+    expect(api(model("gpt-image-2", "image"), openai)).toEqual({
+      images: {
+        base_url: "https://api.openai.com/v1",
+        sdk: { aisdk: "@ai-sdk/openai" },
+      },
+    });
+    expect(protocols(model("whisper-1", "transcription"), openai)).toEqual([
+      "transcriptions",
+    ]);
+    expect(protocols(model("gpt-realtime-whisper", "transcription"), openai)).toEqual([
+      "realtime",
+    ]);
+    expect(protocols(model("gemini-embedding-001", "embedding"), google)).toEqual([
+      "embed-content",
+    ]);
+    expect(protocols(model("gemini-3.1-flash-live-preview", "realtime"), google)).toEqual([
+      "live",
+    ]);
+    expect(protocols(model("gemini-2.5-flash-image", "image"), google)).toEqual([
+      "generate-content",
+    ]);
+    expect(protocols(model("google/gemini-2.5-flash-image", "image"), openrouter)).toEqual([
+      "chat-completions",
+    ]);
   });
 
   test("generates entire v2 catalog from TOMLs into valid ProviderV2 entries", async () => {

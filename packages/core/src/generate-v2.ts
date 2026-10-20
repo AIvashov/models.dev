@@ -18,7 +18,7 @@ import {
   type ApiEntryV2,
   type ApiProtocolV2,
   type ApiV2,
-  type CompatibilityV2,
+  type AuthoredApiEntryV2,
   type CostV2,
   type ExperimentalModeV2,
   type InputCostV2,
@@ -99,11 +99,14 @@ async function loadProviderV2(
     const rawModel = { ...(await readToml(modelPath)), id: modelID };
     const v1Model = isSchemaV2(rawModel) ? modelV2ToV1(rawModel, { modelPath }) : rawModel;
     const resolved = resolveV1Model(v1Model, baseModels, modelPath);
+    const authored = isSchemaV2(rawModel)
+      ? parseWithCause(AuthoredModelV2, withoutSchema(rawModel), { modelPath, toml: rawModel })
+      : undefined;
     models[modelID] = withV2Fields(
-      toModelV2(resolved, v1Provider),
+      toModelV2(resolved, v1Provider, authored?.api),
       rawModel,
+      authored,
       labsV2,
-      modelPath,
     );
   }
 
@@ -143,14 +146,11 @@ async function loadLabsV2(modelsDir: string) {
 function withV2Fields(
   model: ModelV2,
   rawModel: Record<string, unknown>,
+  authored: AuthoredModelV2 | undefined,
   labsV2: Record<string, LabModelV2>,
-  modelPath: string,
 ): ModelV2 {
   const lab =
     typeof rawModel.base_model === "string" ? labsV2[rawModel.base_model] : undefined;
-  const authored = isSchemaV2(rawModel)
-    ? parseWithCause(AuthoredModelV2, withoutSchema(rawModel), { modelPath, toml: rawModel })
-    : undefined;
   const omit = Array.isArray(rawModel.base_model_omit) ? rawModel.base_model_omit : [];
   const inheritsModalities =
     rawModel.modalities === undefined &&
@@ -181,7 +181,11 @@ function withoutSchema(raw: Record<string, unknown>) {
 // V1 -> V2 model transformation
 // ---------------------------------------------------------------------------
 
-export function toModelV2(model: Model, provider: Provider): ModelV2 {
+export function toModelV2(
+  model: Model,
+  provider: Provider,
+  authoredApi?: Record<string, AuthoredApiEntryV2>,
+): ModelV2 {
   const type = model.type ?? "chat";
   const normalizeModality = (m: string) =>
     m === "pdf" ? "application/pdf" : m;
@@ -227,7 +231,7 @@ export function toModelV2(model: Model, provider: Provider): ModelV2 {
         : { output: model.limit.output }),
     },
     ...(model.cost !== undefined ? { cost: toCostV2(model.cost) } : {}),
-    api: toApiV2(model, provider),
+    api: toApiV2(model, provider, authoredApi),
     ...(model.experimental?.modes
       ? {
           experimental: {
@@ -472,30 +476,140 @@ const OPENCODE_HOSTS: Record<string, Record<string, string>> = {
   "zhipuai-coding-plan": hostProtocols("zai-coding-plan"),
 };
 
-function toApiV2(model: Model, provider: Provider): ApiV2 {
+type ModelType = NonNullable<Model["type"]>;
+
+const TYPE_PROTOCOLS: Partial<Record<ModelType, ApiProtocolV2>> = {
+  image: "images",
+  video: "videos",
+  embedding: "embeddings",
+  reranking: "rerank",
+  transcription: "transcriptions",
+  speech: "speech",
+  realtime: "realtime",
+};
+
+// Non-chat models get their type's protocol only on hosts whose endpoints have
+// been checked; elsewhere they keep the SDK's protocol. A host entry overrides
+// TYPE_PROTOCOLS, and null keeps the SDK's protocol for that type.
+const TYPE_PROTOCOL_HOSTS: Record<
+  string,
+  Partial<Record<ModelType, ApiProtocolV2 | null>>
+> = {
+  openai: {},
+  azure: {},
+  // Gemini image, speech and transcription models run on generateContent. Veo
+  // runs on predictLongRunning, which has no protocol yet.
+  google: {
+    embedding: "embed-content",
+    realtime: "live",
+    image: null,
+    speech: null,
+    transcription: null,
+    video: null,
+  },
+  mistral: {},
+  // xAI's speech endpoints are its own (/v1/tts, /v1/stt), not the audio API.
+  xai: { speech: null, transcription: null },
+  zai: {},
+  zhipuai: {},
+};
+
+// Models whose host serves them on another endpoint than their type's.
+const MODEL_PROTOCOLS: Record<string, ApiProtocolV2 | null> = {
+  // Realtime transcription sessions only.
+  "openai/gpt-realtime-whisper": "realtime",
+  "openai/gpt-live-transcribe": "realtime",
+  // /v1/live/sessions, which has no protocol yet.
+  "openai/gpt-live-1": null,
+  "google/gemini-3.5-transcribe-live": "live",
+};
+
+// Authored `[api.<protocol>]` tables are published in file order; parts a
+// table leaves out come from the provider.
+function toApiV2(
+  model: Model,
+  provider: Provider,
+  authored?: Record<string, AuthoredApiEntryV2>,
+): ApiV2 {
+  const tables = Object.entries(authored ?? {});
+  if (tables.length > 0) {
+    return Object.fromEntries(
+      tables.map(([protocol, table]) => {
+        const npm = table.sdk?.aisdk ?? provider.npm;
+        const shape =
+          protocol === "responses"
+            ? "responses"
+            : protocol === "chat-completions"
+              ? "completions"
+              : undefined;
+        return [
+          protocol,
+          toApiEntryV2(
+            model,
+            npm,
+            table.base_url ?? provider.api,
+            resolveOpencodePackage(model, provider, npm, shape),
+            table.compatibility?.reasoning_field,
+          ),
+        ];
+      }),
+    ) as ApiV2;
+  }
+
   const npm = model.provider?.npm ?? provider.npm;
   const shape = model.provider?.shape;
-  const rawBaseUrl =
-    model.provider?.api ??
-    provider.api ??
-    DEFAULT_NPM_BASE_URLS[npm] ??
-    "";
-  const base_url = rawBaseUrl.replace(/\/+$/, "");
+  const baseUrl = model.provider?.api ?? provider.api;
+  const reasoningField =
+    typeof model.interleaved === "object" ? model.interleaved.field : undefined;
 
-  const protocol = resolveProtocol(model, provider, npm, shape);
-  const opencodeai = resolveOpencodePackage(model, provider, npm, shape);
-  const compatibility = toCompatibilityV2(model);
+  // The opencode packages are chat clients, so type-based protocols leave them out.
+  const typeProtocol = resolveTypeProtocol(model, provider);
+  const protocol = typeProtocol ?? resolveProtocol(model, provider, npm, shape);
+  const opencodeai =
+    typeProtocol === undefined
+      ? resolveOpencodePackage(model, provider, npm, shape)
+      : undefined;
+  return {
+    [protocol]: toApiEntryV2(model, npm, baseUrl, opencodeai, reasoningField),
+  } as ApiV2;
+}
 
-  const entry: ApiEntryV2 = {
-    base_url,
+function toApiEntryV2(
+  model: Model,
+  npm: string,
+  baseUrl: string | undefined,
+  opencodeai: string | undefined,
+  reasoningField: string | undefined,
+): ApiEntryV2 {
+  return {
+    base_url: (baseUrl ?? DEFAULT_NPM_BASE_URLS[npm] ?? "").replace(/\/+$/, ""),
     sdk: {
       ...(model.type === "decision" ? {} : { aisdk: npm }),
       ...(opencodeai !== undefined ? { opencodeai } : {}),
     },
-    ...(compatibility !== undefined ? { compatibility } : {}),
+    ...(reasoningField === "reasoning_content"
+      ? { compatibility: { reasoning_field: "reasoning_content" } }
+      : {}),
   };
+}
 
-  return { [protocol]: entry } as ApiV2;
+function resolveTypeProtocol(
+  model: Model,
+  provider: Provider,
+): ApiProtocolV2 | undefined {
+  const type = model.type ?? "chat";
+  const host = TYPE_PROTOCOL_HOSTS[provider.id];
+  if (host === undefined || type === "chat" || type === "decision") {
+    return undefined;
+  }
+  const key = `${provider.id}/${model.id}`;
+  const protocol =
+    key in MODEL_PROTOCOLS
+      ? MODEL_PROTOCOLS[key]
+      : type in host
+        ? host[type]
+        : TYPE_PROTOCOLS[type];
+  return protocol ?? undefined;
 }
 
 export function resolveProtocol(
@@ -551,9 +665,9 @@ function resolveOpencodePackage(
   const host = OPENCODE_HOSTS[provider.id]?.[npm];
   if (host) return host;
   if (npm === "@ai-sdk/amazon-bedrock/mantle") {
-    return `@opencode/ai/providers/amazon-bedrock/mantle/${
-      model.id.includes("gpt-oss") ? "chat" : "responses"
-    }`;
+    const chat =
+      shape === undefined ? model.id.includes("gpt-oss") : shape === "completions";
+    return `@opencode/ai/providers/amazon-bedrock/mantle/${chat ? "chat" : "responses"}`;
   }
   if (npm === "@ai-sdk/openai" && shape === "completions") {
     return "@opencode/ai/providers/openai/chat";
@@ -565,17 +679,6 @@ function resolveOpencodePackage(
     return "@opencode/ai/providers/openai-compatible/responses";
   }
   return OPENCODE_PACKAGES[npm];
-}
-
-function toCompatibilityV2(model: Model): CompatibilityV2 | undefined {
-  if (
-    model.interleaved !== undefined &&
-    typeof model.interleaved === "object" &&
-    model.interleaved.field === "reasoning_content"
-  ) {
-    return { reasoning_field: "reasoning_content" };
-  }
-  return undefined;
 }
 
 // ---------------------------------------------------------------------------
