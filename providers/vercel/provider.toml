@@ -7,10 +7,18 @@
 # /speech-model, /transcription-model, wss /realtime-model). It has no Live model.
 # https://github.com/vercel/ai/tree/main/packages/gateway
 # Responses: https://ai-sdk.dev/providers/ai-sdk-providers/open-responses
-# Opt-in APIs, for the models whose files list them:
-# decision models: POST /v1/evaluate (OpenCode's Gateway package) and
-# https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-decisions ("any decision model")
-# media: https://vercel.com/docs/ai-gateway/modalities
+# Opt-in APIs, for the models whose files list them (media tables are the
+# @ai-sdk/gateway routes those pages document through the AI SDK):
+# evaluate (POST /v1/evaluate): https://vercel.com/docs/ai-gateway/modalities/decision
+# decisions (POST /v1/decisions, "any decision model"): https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-decisions
+# images: https://vercel.com/docs/ai-gateway/modalities/image-generation
+# videos: https://vercel.com/docs/ai-gateway/modalities/video-generation
+# embeddings: https://vercel.com/docs/ai-gateway/modalities/embeddings
+# rerank: https://vercel.com/docs/ai-gateway/modalities/reranking
+# speech (/v4/ai/speech-model): https://vercel.com/docs/ai-gateway/modalities/text-to-speech
+# transcriptions (/v4/ai/transcription-model): https://vercel.com/docs/ai-gateway/modalities/speech-to-text
+# realtime: https://vercel.com/docs/ai-gateway/modalities/realtime
+# live (wss /v4/ai/live-model): https://vercel.com/docs/ai-gateway/modalities/realtime/gpt-live
 name = "Vercel AI Gateway"
 env = ["AI_GATEWAY_API_KEY"]
 # Reasoning HTTP format (accessed 2026-06-25):

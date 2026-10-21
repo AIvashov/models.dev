@@ -6,6 +6,13 @@
 # AI SDK: `openai.responses()`, `.chat()`, `.image()`, `.embedding()`, `.speech()`, `.transcription()`
 # https://ai-sdk.dev/providers/ai-sdk-providers/openai
 # OpenCode: @opencode/ai/providers/openai/responses and /chat
+# Opt-in APIs, for the models whose files list them:
+# images: https://developers.openai.com/api/docs/guides/image-generation
+# embeddings: https://developers.openai.com/api/docs/guides/embeddings
+# speech: https://developers.openai.com/api/docs/guides/text-to-speech
+# transcriptions: https://developers.openai.com/api/docs/guides/speech-to-text
+# realtime: https://developers.openai.com/api/docs/guides/realtime
+# moderations (POST /v1/moderations): https://developers.openai.com/api/docs/guides/moderation
 name = "OpenAI"
 env = ["OPENAI_API_KEY"]
 doc = "https://platform.openai.com/docs/models"
@@ -40,10 +47,6 @@ sdk = { aisdk = "@ai-sdk/openai" }
 opt_in = true
 
 [api.realtime]
-base_url = "https://api.openai.com/v1"
-opt_in = true
-
-[api.live]
 base_url = "https://api.openai.com/v1"
 opt_in = true
 
