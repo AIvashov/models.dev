@@ -5,7 +5,7 @@ schema = 2
 v2_only = true
 base_model = "openai/gpt-live-1"
 
-[api.realtime]
+[api.live]
 
 [cost.audio.input]
 unit = "minute"
