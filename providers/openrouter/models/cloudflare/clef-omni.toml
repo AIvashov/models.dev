@@ -20,6 +20,10 @@ temperature = false
 context = 65_536
 output = 0
 
+[api.systemone]
+
+[api.decisions]
+
 [cost.text.input]
 price = 0.15
 

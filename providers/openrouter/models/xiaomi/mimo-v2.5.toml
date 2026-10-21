@@ -20,6 +20,10 @@ output = 945_000
 [api.chat-completions]
 compatibility = { reasoning_field = "reasoning_details" }
 
+[api.responses]
+
+[api.messages]
+
 [cost.text.input]
 price = 0.119
 cache = { read = 0.00255 }

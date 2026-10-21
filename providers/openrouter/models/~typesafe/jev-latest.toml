@@ -13,6 +13,10 @@ output = ["text"]
 [limit]
 context = 262_144
 
+[api.systemone]
+
+[api.decisions]
+
 [cost.text.input]
 price = 0.042
 

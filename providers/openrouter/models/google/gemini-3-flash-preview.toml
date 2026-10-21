@@ -16,6 +16,10 @@ cache = { supported = true, implicit = true, explicit = { ttl = ["5m"], max_brea
 [api.chat-completions]
 compatibility = { reasoning_field = "reasoning_details" }
 
+[api.responses]
+
+[api.messages]
+
 [cost.text.input]
 price = 0.5
 cache = { read = 0.05, write = 0.083333 }
