@@ -7,6 +7,8 @@ v2_only = true
 base_model = "openai/gpt-4o-transcribe-diarize"
 status = "deprecated"
 
+[api.transcriptions]
+
 [cost.text.input]
 price = 2.5
 

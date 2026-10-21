@@ -15,6 +15,8 @@ store = true
 cache = { supported = true, implicit = { min_tokens = 1_024 }, explicit = { ttl = ["30m"], max_breakpoints = 4, min_tokens = 1_024 } }
 prompt_cache_key = true
 
+[api.responses]
+
 [cost.text.input]
 price = 12.5
 cache = { read = 1.25, write = 15.625 }

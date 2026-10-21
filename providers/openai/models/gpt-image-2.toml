@@ -5,6 +5,8 @@ name = "gpt-image-2"
 [limit]
 input = 0
 
+[api.images]
+
 [cost.text.input]
 price = 5
 cache = { read = 1.25 }
