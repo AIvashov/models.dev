@@ -2,7 +2,7 @@
 # https://ofox.ai/models/google/gemini-3.8-flash
 # https://api.ofox.ai/v1/models/google/gemini-3.8-flash
 # https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash
-# Mid-conversation (Ofox Gemini native API, https://ofox.ai/docs/api/gemini/generate-content): systemInstruction, thinkingConfig and tools are request-level and content roles are user/model, so system_updates, effort_updates and tools.updates are false.
+# Mid-conversation (Ofox Gemini native API, https://ofox.ai/docs/api/gemini/generate-content): system_updates = false: content roles are user/model and systemInstruction is request-level, so a later system message can't stay in place. effort_updates and tools.updates are unset: Ofox documents neither and they weren't tested live.
 # Cache: implicit, plus explicit cachedContents on the Gemini native API (https://ofox.ai/docs/develop/models/gemini#caching, https://ofox.ai/docs/develop/advanced/gemini-explicit-cache).
 # Input MIME types: the lab's (models/google/gemini-3.8-flash.toml) for each kind Ofox serves.
 # Effort: generationConfig.thinkingConfig.thinkingLevel = low|medium|high (https://ofox.ai/docs/develop/models/gemini/thinking)
@@ -14,11 +14,9 @@ input = ["text", "image/png", "image/jpeg", "image/webp", "image/heic", "image/h
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["low", "medium", "high"] }
 structured_output = true
 system_updates = false
-effort_updates = false
 cache = { supported = true, implicit = true, explicit = true }
 
 [limit]

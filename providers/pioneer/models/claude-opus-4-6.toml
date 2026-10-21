@@ -2,17 +2,14 @@
 # Reasoning: the underlying model's controls from providers/anthropic/models/claude-opus-4-6.toml; Pioneer's catalog listed the same boilerplate levels on every model.
 # Effort: reasoning.effort = low|medium|high|max in the same object, rendered to the upstream's native field.
 # Budget: reasoning.max_tokens (Anthropic-style budget) in the same object.
-# Mid-conversation (Fastino /v1/chat/completions, https://docs.fastino.ai/openapi.json ChatCompletionRequest): effort_updates = false and
-# tools.updates = false: `reasoning` and `tools` are request-level, with no per-turn effort or tool addition/removal field.
+# Mid-conversation (Fastino /v1/chat/completions, https://docs.fastino.ai/openapi.json ChatCompletionRequest): effort_updates and tools.updates unset: Fastino documents neither and they weren't tested live.
 # system_updates unset: Fastino renders each request to the upstream's native API and doesn't document where a later system message goes.
 schema = 2
 base_model = "anthropic/claude-opus-4-6"
 status = "deprecated"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["low", "medium", "high", "max"], budget = { min = 1_024 } }
-effort_updates = false
 
 [api.chat-completions]
 compatibility = { reasoning_field = "reasoning_content" }

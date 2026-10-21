@@ -6,8 +6,6 @@ base_model = "openai/o3"
 [capabilities]
 reasoning = { supported = true, effort = ["low", "medium", "high"] }
 structured_output = true
-effort_updates = false
-tools = { supported = true, updates = false }
 cache = { supported = true, implicit = true }
 
 [cost.text.input]

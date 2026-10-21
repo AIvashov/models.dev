@@ -1,5 +1,5 @@
 # Reasoning: no caller on/off control. The reasoning mapping (Nebius) is deactivated, and the remaining hosts get no thinking switch: the gateway drops reasoning_effort = "none" for them (theopenco/llmgateway@1a1791f packages/actions/src/prepare-request-body.ts).
-# effort_updates = false, tools.updates = false: Chat Completions takes reasoning_effort per request and has no tool-change message (https://docs.llmgateway.io/features/reasoning)
+# effort_updates and tools.updates unset: LLM Gateway documents neither and they weren't tested live.
 schema = 2
 name = "Qwen3 235B A22B Thinking (2507)"
 description = "Qwen reasoning model for deliberate problem solving, math, and coding"
@@ -12,11 +12,10 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = true }
 structured_output = true
 temperature = true
-effort_updates = false
 
 [limit]
 context = 262_000

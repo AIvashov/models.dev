@@ -1,6 +1,6 @@
 # Input MIME types: Anthropic's Claude 3 image types (models/anthropic/claude-3-haiku-20240307.toml).
-# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions, where reasoning_effort
-# and tools are per-request fields (effort_updates = false, tools.updates = false).
+# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions; effort_updates and tools.updates
+# are unset: DigitalOcean documents neither and they weren't tested live.
 schema = 2
 name = "Claude 3 Opus"
 description = "Legacy model retained for compatibility with older integrations"
@@ -15,10 +15,9 @@ input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = false }
 temperature = true
-effort_updates = false
 
 [limit]
 context = 200_000

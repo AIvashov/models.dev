@@ -5,8 +5,6 @@ base_model = "anthropic/claude-sonnet-4-20250514"
 
 [capabilities]
 reasoning = { supported = true, toggle = true, budget = { min = 1_024, max = 63_999 } }
-effort_updates = false
-tools = { supported = true, updates = false }
 
 [cost.text.input]
 price = 3

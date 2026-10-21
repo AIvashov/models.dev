@@ -1,5 +1,5 @@
 # Modalities: StepFun vision formats JPG/JPEG, PNG, static GIF, WebP, https://platform.stepfun.ai/docs/en/guides/developer/image-chat
-# Mid-conversation (@ai-sdk/gateway, live 2026-10-19, default route): a mid-conversation system message is hoisted (the next request misses the cache). Per-turn effort and tool changes exist only for Anthropic models on this API.
+# Mid-conversation (@ai-sdk/gateway, live 2026-10-19, default route): a mid-conversation system message is hoisted (the next request misses the cache). effort_updates and tools.updates are unset: the gateway documents neither for this model and they weren't tested live.
 schema = 2
 base_model = "stepfun/step-5-preview"
 base_model_omit = ["limit.input"]
@@ -14,7 +14,6 @@ tools = { supported = false }
 reasoning = { supported = false }
 structured_output = true
 system_updates = false
-effort_updates = false
 
 [limit]
 context = 1_048_576

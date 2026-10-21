@@ -1,13 +1,11 @@
-# Mid-conversation: OVHcloud AI Endpoints serves this model on POST /v1/chat/completions; reasoning and tools are per-request fields with no per-turn effort or tool-change mechanism (effort_updates = false, tools.updates = false). https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/
+# Mid-conversation: OVHcloud AI Endpoints serves this model on POST /v1/chat/completions (https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/); system_updates, effort_updates and tools.updates are unset: OVHcloud AI Endpoints documents none of them and they weren't tested live.
 # Modalities: inherited from the lab (text + image/png|jpeg|webp|gif); OVHcloud's catalog reports text and image input without formats (https://catalog.endpoints.ai.ovh.net/rest/v2/openrouter).
 schema = 2
 base_model = "mistral/mistral-small-3.2-24b-instruct"
 name = "Mistral-Small-3.2-24B-Instruct-2506"
 
 [capabilities]
-tools = { supported = true, updates = false }
 structured_output = true
-effort_updates = false
 
 [limit]
 context = 131_072

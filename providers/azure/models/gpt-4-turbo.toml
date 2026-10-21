@@ -7,7 +7,6 @@ base_model_omit = ["structured_output"]
 status = "deprecated"
 
 [capabilities]
-tools = { supported = true, updates = false }
 cache = { supported = false }
 system_updates = true
 effort_updates = false

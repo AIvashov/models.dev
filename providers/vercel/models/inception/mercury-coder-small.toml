@@ -1,4 +1,4 @@
-# Mid-conversation (@ai-sdk/gateway): per-turn effort and tool changes exist only for Anthropic models on this API. system_updates left unset: live cache results on the default route were inconclusive.
+# Mid-conversation (@ai-sdk/gateway): system_updates, effort_updates and tools.updates are unset: the gateway documents none of them for this model, and live cache results on the default route were inconclusive.
 schema = 2
 name = "Mercury Coder Small Beta"
 description = "Coding model for repository understanding, refactors, and agentic engineering tasks"
@@ -11,10 +11,9 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = false }
 temperature = true
-effort_updates = false
 
 [limit]
 context = 32_000

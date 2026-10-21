@@ -95,15 +95,15 @@ skip = [
   "1h cache writes: unified billing passes provider prices through with no markup (https://developers.cloudflare.com/ai-gateway/features/unified-billing/), i.e. Anthropic's 2x input rate.",
 ]
 "alibaba/" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19 (qwen3.7-plus): a mid-conversation system message keeps the cached prefix (in place).",
 ]
 "deepseek/" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "system_updates unset: every request returned 500 (code 2002) on 2026-10-19, so it could not be checked live.",
 ]
 "fireworks/" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19: a mid-conversation system message keeps the cached prefix (in place).",
 ]
 "google/gemini-2" = [
@@ -115,21 +115,21 @@ skip = [
   "Live 2026-10-20: response_format json_schema is enforced; reasoning_effort none and xhigh are rejected (code 7003). Effort tokens below: two trials, mean, on the same math prompt. Mid-conversation flags not checked.",
 ]
 "google/gemini-4" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), served by Vertex AI: no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), served by Vertex AI. effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19: a mid-conversation system message misses the warm cache (hoisted into the system instruction), so system_updates = false; response_format json_schema is enforced.",
 ]
 "meta/muse-spark-1" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), translated to Meta's Responses API: no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), translated to Meta's Responses API. effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19 (muse-spark-1.1, gateway logs): distinct mid-conversation system messages miss the warm cache every time while plain turns hit it (hoisted), so system_updates = false.",
   "Live 2026-10-19 (muse-spark-1.1, 1.3, wonder-1.0): response_format json_schema is dropped and the answer is prose, so structured_output = false.",
 ]
 "meta/muse-wonder" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), translated to Meta's Responses API: no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), translated to Meta's Responses API. effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19 (muse-spark-1.1, same route, gateway logs): distinct mid-conversation system messages miss the warm cache every time while plain turns hit it (hoisted), so system_updates = false.",
   "Live 2026-10-19: response_format json_schema is dropped and the answer is prose, so structured_output = false.",
 ]
 "meta/muse-spark-open" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), served by Fireworks: no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/), served by Fireworks. effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19: a mid-conversation system message keeps the cached prefix (in place); response_format json_schema is enforced.",
 ]
 "moonshotai/" = [
@@ -137,15 +137,15 @@ skip = [
   "Live 2026-10-19: a mid-conversation system message keeps the cached prefix, and a system message carrying `tools` (https://platform.kimi.ai/docs/guide/use-dynamic-tool-loading) is forwarded, keeps the cache, and the added tool is called.",
 ]
 "reflection-ai/" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19: a mid-conversation system message keeps the cached prefix (in place).",
 ]
 "unbiased/" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19: a mid-conversation system message keeps the cached prefix (in place).",
 ]
 "xai/" = [
-  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.",
+  "Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.",
   "Live 2026-10-19: a mid-conversation system message keeps the cached prefix (grok-4.3, in place); response_format json_schema is enforced (grok-4.3, grok-4.20-0309-non-reasoning).",
 ]
 

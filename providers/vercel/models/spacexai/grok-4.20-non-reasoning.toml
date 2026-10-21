@@ -1,12 +1,10 @@
-# Mid-conversation (@ai-sdk/gateway, live 2026-10-19): system messages stay in place (cache prefix kept). No per-turn effort or tool-change mechanism is forwarded.
+# Mid-conversation (@ai-sdk/gateway, live 2026-10-19): system messages stay in place (cache prefix kept). effort_updates and tools.updates are unset: the gateway documents neither for this model and they weren't tested live.
 schema = 2
 base_model = "xai/grok-4.20-0309-non-reasoning"
 name = "Grok 4.20 Non-Reasoning"
 
 [capabilities]
-tools = { supported = true, updates = false }
 system_updates = true
-effort_updates = false
 
 [limit]
 context = 2_000_000

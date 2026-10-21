@@ -1,13 +1,11 @@
-# Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.
+# Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.
 # Live 2026-10-19: a mid-conversation system message keeps the cached prefix (in place).
 schema = 2
 base_model = "unbiased/pareto"
 
 [capabilities]
-tools = { supported = true, updates = false }
 cache = { supported = true, implicit = true }
 system_updates = true
-effort_updates = false
 structured_output = false
 
 [limit]

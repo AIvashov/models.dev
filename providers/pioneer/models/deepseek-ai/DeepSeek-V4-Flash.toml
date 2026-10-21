@@ -2,18 +2,15 @@
 # Reasoning: the underlying model's controls from providers/deepseek/models/deepseek-v4-flash.toml; Pioneer's catalog listed the same boilerplate levels on every model.
 # Toggle: reasoning.enabled = true|false in Fastino's normalized `reasoning` object (https://docs.fastino.ai/openapi.json ChatCompletionRequest.reasoning).
 # Effort: reasoning.effort = low|high|max in the same object, rendered to the upstream's native field.
-# Mid-conversation (Fastino /v1/chat/completions, https://docs.fastino.ai/openapi.json ChatCompletionRequest): effort_updates = false and
-# tools.updates = false: `reasoning` and `tools` are request-level, with no per-turn effort or tool addition/removal field.
+# Mid-conversation (Fastino /v1/chat/completions, https://docs.fastino.ai/openapi.json ChatCompletionRequest): effort_updates and tools.updates unset: Fastino documents neither and they weren't tested live.
 # system_updates unset: Fastino renders each request to the upstream's native API and doesn't document where a later system message goes.
 schema = 2
 base_model = "deepseek/deepseek-v4-flash"
 status = "deprecated"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, toggle = true, effort = ["low", "high", "max"] }
 structured_output = true
-effort_updates = false
 
 [limit]
 output = 131_072

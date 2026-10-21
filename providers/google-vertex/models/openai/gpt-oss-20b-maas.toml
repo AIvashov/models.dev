@@ -1,7 +1,7 @@
 # Source: https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing
 # Implicit caching (4,096-token minimum): https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/use-open-models#context-caching
-# Mid-conversation updates: false. The Vertex OpenAI-compatible endpoint (endpoints/openapi) documents no in-place
-# system message, per-turn effort, or tool-change mechanism: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/call-open-model-apis
+# Mid-conversation updates: unset. The Vertex OpenAI-compatible endpoint (endpoints/openapi) documents no in-place
+# system message, per-turn effort, or tool-change mechanism, and none was tested live: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/call-open-model-apis
 schema = 2
 name = "GPT OSS 20B"
 description = "Open-weight GPT model for self-hosted reasoning and instruction-following workloads"
@@ -15,12 +15,10 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = true, effort = ["low", "medium", "high"] }
 structured_output = true
 temperature = true
-system_updates = false
-effort_updates = false
 cache = { supported = true, implicit = { min_tokens = 4_096 } }
 
 [limit]

@@ -7207,13 +7207,10 @@ test("Hugging Face creates v2 files with host data only and the lab's exact MIME
       input: ["text", "image/bmp", "image/jpeg", "image/png", "image/tiff", "image/webp", "image/heic"],
       output: ["text"],
     },
-    capabilities: {
-      tools: { supported: true, updates: false },
-      structured_output: true,
-      effort_updates: false,
-    },
     cost: { text: { input: { price: 0.4 }, output: { price: 3.2 } } },
   });
+  // The lab already supports tools, and the mid-conversation flags stay unset.
+  expect(doc.capabilities).toEqual({ structured_output: true });
   expect(doc).not.toHaveProperty("limit");
 
   // Same modality kinds as the lab: inherited.
@@ -7227,7 +7224,14 @@ test("Hugging Face creates v2 files with host data only and the lab's exact MIME
   const noTools = buildHuggingFaceModel(huggingFaceModel({
     providers: [{ provider: "fast", status: "live", pricing: { input: 0.4, output: 3.2 }, throughput: 90 }],
   }), "alibaba/qwen3.5-122b-a10b");
-  expect(noTools.capabilities).not.toHaveProperty("tools");
+  expect(noTools).not.toHaveProperty(["capabilities", "tools"]);
+
+  // A lab without tools: the router's tool support is written, with no update flag.
+  const toolsOverLab = buildHuggingFaceModel(huggingFaceModel({
+    id: "openai/gpt-oss-20b",
+    architecture: { input_modalities: ["text"], output_modalities: ["text"] },
+  }), "openai/gpt-oss-20b", undefined, { modalities: { input: ["text"], output: ["text"] }, tool_call: false });
+  expect(toolsOverLab.capabilities).toEqual({ tools: { supported: true }, structured_output: true });
 });
 
 test("Hugging Face skips new reasoning models until their controls are authored", () => {

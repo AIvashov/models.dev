@@ -23,7 +23,6 @@ temperature = true
 top_p = true
 top_k = true
 system_updates = false
-effort_updates = false
 stream_usage = true
 cache = { supported = true, implicit = { min_tokens = 1_024 }, explicit = { ttl = ["5m"], max_breakpoints = 4, targets = ["system", "messages"], min_tokens = 1_024 } }
 

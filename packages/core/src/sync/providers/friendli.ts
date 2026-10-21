@@ -290,10 +290,10 @@ const EFFORT_DOC_URL =
 const BUDGET_DOC_URL =
   "https://friendli.ai/docs/openapi/model-apis/chat-completions#body-reasoning-budget-one-of-0";
 
-// Sources for the v2-only fields (mid-conversation flags, image MIME types)
-// authored in the files. They aren't in the catalog, so sync keeps them as is.
+// Sources for the v2-only data in the files: the mid-conversation flags, which
+// stay unset, and image MIME types, which aren't in the catalog, so sync keeps them.
 const MID_CONVERSATION_LINE =
-  "# Mid-conversation: Friendli serves this model on POST /serverless/v1/chat/completions; reasoning and tools are per-request fields with no per-turn effort or tool-change mechanism (effort_updates = false, tools.updates = false). https://friendli.ai/docs/openapi/model-apis/chat-completions";
+  "# Mid-conversation: Friendli serves this model on POST /serverless/v1/chat/completions (https://friendli.ai/docs/openapi/model-apis/chat-completions); system_updates, effort_updates and tools.updates are unset: Friendli documents none of them and they weren't tested live.";
 const IMAGE_MIME_LINE =
   "# Input MIME types: images JPEG, PNG and AVIF (https://friendli.ai/docs/guides/multi-modality); video per the lab.";
 

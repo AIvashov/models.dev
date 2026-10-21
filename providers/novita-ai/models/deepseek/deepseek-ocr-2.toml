@@ -5,7 +5,6 @@ base_model = "deepseek/deepseek-ocr-2"
 
 [capabilities]
 system_updates = false
-effort_updates = false
 
 [cost.text.input]
 price = 0.03

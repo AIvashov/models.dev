@@ -7,9 +7,7 @@ description = "Qwen reasoning model for deliberate problem solving, math, and co
 knowledge = "2025-04"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true }
-effort_updates = false
 
 [cost.text.input]
 price = 0.3

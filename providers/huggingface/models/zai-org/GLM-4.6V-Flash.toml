@@ -9,9 +9,7 @@ input = ["text", "image/jpeg", "image/png"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true }
-effort_updates = false
 
 [limit]
 context = 131_072

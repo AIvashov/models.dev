@@ -6,10 +6,6 @@ name = "Kimi-K2-Instruct"
 description = "Kimi model for long-context chat, coding, and agentic reasoning"
 knowledge = "2024-10"
 
-[capabilities]
-tools = { supported = true, updates = false }
-effort_updates = false
-
 [limit]
 output = 16_384
 

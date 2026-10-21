@@ -4,10 +4,8 @@ schema = 2
 base_model = "writer/palmyra-x4"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = false }
 structured_output = false
-effort_updates = false
 
 [limit]
 output = 32_000

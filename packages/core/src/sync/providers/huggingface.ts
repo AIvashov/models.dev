@@ -211,14 +211,20 @@ export function buildHuggingFaceModel(
     doc.modalities = { input, output };
   }
 
-  // Chat Completions takes tools and reasoning_effort per request, with no
-  // per-turn effort or tool-change message.
   // Tool support comes from the router (any live provider); otherwise it's inherited.
+  // The mid-conversation flags stay unset: HF documents none of them and they
+  // weren't tested live.
   const next: Record<string, unknown> = {};
-  if (aggregate.tools) next.tools = { supported: true, updates: false };
-  Object.assign(next, doc.capabilities, { effort_updates: false });
-  doc.capabilities = next;
+  if (aggregate.tools && !labSupportsTools(lab)) next.tools = { supported: true };
+  Object.assign(next, doc.capabilities);
+  if (Object.keys(next).length > 0) doc.capabilities = next;
+  else delete doc.capabilities;
   return doc;
+}
+
+function labSupportsTools(lab: Record<string, unknown>) {
+  const tools = (lab.capabilities as { tools?: { supported?: boolean } } | undefined)?.tools;
+  return (tools?.supported ?? lab.tool_call) === true;
 }
 
 function labModel(modelID: string) {

@@ -1,12 +1,11 @@
 # Status: deprecated. Not listed by GET https://api.fastino.ai/v1/models or GET https://api.fastino.ai/v1/base-models (2026-10-20); the inference catalog at https://docs.fastino.ai/concepts/models no longer lists it.
-# Mid-conversation (Fastino /v1/chat/completions, https://docs.fastino.ai/openapi.json ChatCompletionRequest): tools.updates = false: `tools` is request-level, with no tool addition/removal field.
+# Mid-conversation (Fastino /v1/chat/completions, https://docs.fastino.ai/openapi.json ChatCompletionRequest): effort_updates and tools.updates unset: Fastino documents neither and they weren't tested live.
 # system_updates unset: Fastino renders each request to the upstream's native API and doesn't document where a later system message goes.
 schema = 2
 base_model = "openai/gpt-4o"
 status = "deprecated"
 
 [capabilities]
-tools = { supported = true, updates = false }
 structured_output = true
 
 [cost.text.input]

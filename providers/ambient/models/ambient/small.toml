@@ -1,4 +1,4 @@
-# Mid-conversation: Ambient serves this model on POST /v1/chat/completions; reasoning and tools are per-request fields with no per-turn effort or tool-change mechanism (effort_updates = false, tools.updates = false). https://api.ambient.xyz/openapi.json
+# Mid-conversation: Ambient serves this model on POST /v1/chat/completions (https://api.ambient.xyz/openapi.json); system_updates, effort_updates and tools.updates are unset: Ambient documents none of them and they weren't tested live.
 schema = 2
 name = "Ambient Small"
 description = "Efficient model for low-latency assistance, extraction, and routine automation"
@@ -10,11 +10,10 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = false }
 structured_output = false
 temperature = true
-effort_updates = false
 
 [limit]
 context = 101_072

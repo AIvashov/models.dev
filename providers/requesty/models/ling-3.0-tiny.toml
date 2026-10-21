@@ -1,5 +1,5 @@
 # system_updates = true: supports_system_mid_conversation on https://router.requesty.ai/v1/models/managed
-# effort_updates = false, tools.updates = false: Chat Completions takes reasoning_effort per request and has no tool-change message (https://docs.requesty.ai/features/reasoning)
+# effort_updates and tools.updates unset: Requesty documents neither and they weren't tested live.
 schema = 2
 name = "ling-3.0-tiny"
 description = "Ling-3.0-tiny is an efficient 7.9B parameter MoE model from inclusionAI with only 1.3B active parameters per token. Built for responsive agents, reliable instruction following and multi turn conversation, with a 256K context window, native function calling, prompt caching and switchable Thinking and Instant modes."
@@ -12,11 +12,10 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = true, effort = ["none", "low", "medium", "high", "max"] }
 structured_output = false
 system_updates = true
-effort_updates = false
 
 [limit]
 context = 262_144

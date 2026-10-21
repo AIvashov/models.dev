@@ -1,3 +1,4 @@
+# Mid-conversation: system_updates, effort_updates and tools.updates are unset; AI/ML API documents none of them and they weren't tested live.
 schema = 2
 base_model = "openai/gpt-5.4-image-2"
 

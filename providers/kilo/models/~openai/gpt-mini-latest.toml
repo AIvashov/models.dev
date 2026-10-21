@@ -1,6 +1,5 @@
 # Tracks the current GPT Mini alias target on Kilo (GPT-5.4 Mini).
-# Mid-conversation (Kilo Chat Completions; https://kilo.ai/docs/gateway/api-reference): effort_updates = false and tools.updates = false:
-# system messages take string content only, with no per-turn effort or tool addition/removal mechanism.
+# Mid-conversation (Kilo Chat Completions; https://kilo.ai/docs/gateway/api-reference): effort_updates and tools.updates unset: Kilo documents neither and they weren't tested live.
 # system_updates unset: Kilo routes each request to Vercel AI Gateway, OpenRouter or a direct upstream and doesn't document where a mid-conversation system message ends up.
 schema = 2
 name = "OpenAI: GPT Mini Latest"
@@ -14,11 +13,10 @@ input = ["application/pdf", "image", "text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = true, effort = ["none", "low", "medium", "high", "xhigh"] }
 structured_output = true
 temperature = false
-effort_updates = false
 
 [limit]
 context = 400_000

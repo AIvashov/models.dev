@@ -20,7 +20,6 @@ temperature = true
 top_p = true
 top_k = true
 system_updates = false
-effort_updates = false
 stream_usage = true
 cache = { supported = false }
 

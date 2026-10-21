@@ -1,4 +1,4 @@
-# Mid-conversation: Inceptron serves this model on POST /v1/chat/completions; reasoning and tools are per-request fields with no per-turn effort or tool-change mechanism (effort_updates = false, tools.updates = false). https://docs.inceptron.io
+# Mid-conversation: Inceptron serves this model on POST /v1/chat/completions (https://docs.inceptron.io); system_updates, effort_updates and tools.updates are unset: Inceptron documents none of them and they weren't tested live.
 # Input MIME types: the lab's image list; Inceptron's catalog reports image input without formats (https://api.inceptron.io/v1/models).
 schema = 2
 base_model = "moonshotai/kimi-k2.6"
@@ -8,10 +8,8 @@ input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp", "image/bm
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true }
 structured_output = true
-effort_updates = false
 
 [api.chat-completions]
 compatibility = { reasoning_field = "reasoning_content" }

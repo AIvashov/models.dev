@@ -17,7 +17,6 @@ output = ["text"]
 tools = { supported = true, updates = false }
 reasoning = { supported = false }
 temperature = true
-effort_updates = false
 
 [limit]
 context = 4_096

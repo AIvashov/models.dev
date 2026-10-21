@@ -253,7 +253,7 @@ test("a lab-backed model with no card and no statable control is reported, not i
   expect(aimlapi.missingModelID(model!)).toBeUndefined();
 });
 
-test("v2 files keep their mid-conversation flags, and the header cites them", () => {
+test("v2 files leave the mid-conversation flags unset, and the header says so", () => {
   const [model] = aimlapi.parseModels({
     data: [{
       id: "openai/gpt-4o",
@@ -270,12 +270,7 @@ test("v2 files keep their mid-conversation flags, and the header cites them", ()
   const doc = {
     schema: 2,
     base_model: "openai/gpt-4o",
-    capabilities: {
-      structured_output: true,
-      system_updates: false,
-      effort_updates: false,
-      tools: { supported: true, updates: false },
-    },
+    capabilities: { structured_output: true },
     cost: { text: { input: { price: 3.25, cache: { read: 1.625 } }, output: { price: 13 } } },
   };
   const { id: _id, ...existing } = modelV2ToV1({ ...doc, id: "openai/gpt-4o" });
@@ -286,9 +281,10 @@ test("v2 files keep their mid-conversation flags, and the header cites them", ()
   };
 
   const translated = aimlapi.translateModel(model!, context) as { header?: string; model: Record<string, any> };
-  expect(translated.header).toContain("effort_updates = false, tools.updates = false");
-  expect(translated.header).toContain("docs-json?model=openai%2Fgpt-4o&endpoint=openai%2Fchat-completions");
-  expect(translated.header).toContain("# system_updates = false:");
+  expect(translated.header).toContain(
+    "# Mid-conversation: system_updates, effort_updates and tools.updates are unset; AI/ML API documents none of them",
+  );
+  expect(translated.header).not.toContain("= false");
   expect(translated.header).not.toContain("# Cache:");
   const cached = aimlapi.translateModel(model!, {
     ...context,
@@ -300,16 +296,25 @@ test("v2 files keep their mid-conversation flags, and the header cites them", ()
     expect(translated.model).not.toHaveProperty(fact);
   }
 
-  // A price change patches the price and keeps the v2-only flags. The engine
-  // carries structured_output over before patching, as it does here.
+  // A price change patches the price and writes no flags. The engine carries
+  // structured_output over before patching, as it does here.
   const synced = preserveStructuredOutput(translated.model as never, existing as ExistingModel);
   const next = patchModelV2(doc, existing as ExistingModel, synced) as Record<string, any>;
   expect(next.cost.text.input.price).toBe(4);
-  expect(next.capabilities).toMatchObject(doc.capabilities);
+  expect(next.capabilities).toEqual(doc.capabilities);
 
-  // No flags in the file, no source lines for them.
+  // A flag someone verified stays, and the header no longer calls the flags unset.
+  const verified = { ...doc, capabilities: { ...doc.capabilities, system_updates: true } };
+  const kept = aimlapi.translateModel(model!, { ...context, v2: () => verified }) as { header?: string };
+  expect(kept.header).toBeUndefined();
+  expect((patchModelV2(verified, existing as ExistingModel, synced) as Record<string, any>).capabilities)
+    .toEqual(verified.capabilities);
+
+  // A v2 card with no capabilities table still says so; a v1 card doesn't.
   const bare = aimlapi.translateModel(model!, { ...context, v2: () => ({ schema: 2, base_model: "openai/gpt-4o" }) }) as { header?: string };
-  expect(bare.header).toBeUndefined();
+  expect(bare.header).toContain("# Mid-conversation: system_updates, effort_updates and tools.updates are unset");
+  const v1 = aimlapi.translateModel(model!, { ...context, v2: () => undefined }) as { header?: string };
+  expect(v1.header).toBeUndefined();
 });
 
 function catalogRow(id: string, name: string, prices: Record<string, number>, reasoningEffort: string[]) {

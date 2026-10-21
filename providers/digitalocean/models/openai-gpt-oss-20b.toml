@@ -1,5 +1,5 @@
-# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions, where reasoning_effort
-# and tools are per-request fields (effort_updates = false, tools.updates = false).
+# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions; effort_updates and tools.updates
+# are unset: DigitalOcean documents neither and they weren't tested live.
 # system_updates: live 2026-10-20, a system message after an assistant turn was delivered.
 # Cache: DigitalOcean-hosted, automatic prefix caching; prompt_cache_key scopes it. https://docs.digitalocean.com/products/inference/how-to/use-prompt-caching/
 schema = 2
@@ -8,12 +8,10 @@ name = "OpenAI GPT-oss-20b"
 description = "Open-weight GPT model for self-hosted reasoning and instruction-following workloads"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["low", "medium", "high"] }
 cache = { supported = true, implicit = true }
 structured_output = true
 system_updates = true
-effort_updates = false
 prompt_cache_key = true
 
 [limit]

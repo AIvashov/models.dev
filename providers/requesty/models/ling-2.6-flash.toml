@@ -1,5 +1,5 @@
 # system_updates = true: supports_system_mid_conversation on https://router.requesty.ai/v1/models/managed
-# effort_updates = false, tools.updates = false: Chat Completions takes reasoning_effort per request and has no tool-change message (https://docs.requesty.ai/features/reasoning)
+# effort_updates and tools.updates unset: Requesty documents neither and they weren't tested live.
 schema = 2
 name = "ling-2.6-flash"
 description = "Inclusion AI ling-2.6-flash"
@@ -12,11 +12,10 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = false }
 structured_output = false
 system_updates = true
-effort_updates = false
 
 [limit]
 context = 262_144

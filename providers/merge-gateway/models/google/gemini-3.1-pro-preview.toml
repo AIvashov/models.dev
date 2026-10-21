@@ -6,8 +6,6 @@ base_model = "google/gemini-3.1-pro-preview"
 [capabilities]
 reasoning = { supported = true, effort = ["low", "medium", "high"] }
 structured_output = true
-effort_updates = false
-tools = { supported = true, updates = false }
 cache = { supported = true, implicit = true }
 
 [cost.text.input]

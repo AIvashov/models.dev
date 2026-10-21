@@ -3,14 +3,12 @@
 #   and https://docs.quiver.ai/api-reference/openresponses/create-open-response says Arrow 2 and Telos "accept omission
 #   or the default value 1; non-default values are rejected on the current public deployment". Vercel's catalog
 #   (GET https://ai-gateway.vercel.sh/v1/models, 2026-10-20) still lists temperature; a live check wasn't possible.
-# Mid-conversation (@ai-sdk/gateway): per-turn effort and tool changes exist only for Anthropic models on this API. system_updates left unset: live cache results on the default route were inconclusive.
+# Mid-conversation (@ai-sdk/gateway): system_updates, effort_updates and tools.updates are unset: the gateway documents none of them for this model, and live cache results on the default route were inconclusive.
 schema = 2
 base_model = "quiverai/arrow-2"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["low", "medium", "high", "xhigh"] }
-effort_updates = false
 temperature = false
 
 [cost.text.input]

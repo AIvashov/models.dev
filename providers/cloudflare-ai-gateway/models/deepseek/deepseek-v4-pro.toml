@@ -1,4 +1,4 @@
-# Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/): no per-turn effort or tool-change mechanism.
+# Route: REST API POST /ai/v1/chat/completions (https://developers.cloudflare.com/ai-gateway/usage/rest-api/). effort_updates and tools.updates are unset: the gateway documents neither for this route and they weren't tested live.
 # system_updates unset: every request returned 500 (code 2002) on 2026-10-19, so it could not be checked live.
 # Off: reasoning_effort = none; effort: low|high|max (POST /ai/v1/chat/completions, Fireworks route; not verified live: every request returned 500, code 2002, on 2026-10-19).
 # Source: https://docs.fireworks.ai/api-reference/post-chatcompletions
@@ -6,10 +6,8 @@ schema = 2
 base_model = "deepseek/deepseek-v4-pro"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["none", "low", "high", "max"] }
 structured_output = true
-effort_updates = false
 
 [limit]
 context = 131_072

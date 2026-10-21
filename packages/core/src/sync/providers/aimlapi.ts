@@ -1155,6 +1155,7 @@ function wireHeader(
   id: string,
   reasoningOptions: Array<{ type: "effort"; values: EffortValue[] }> | undefined,
   capabilities: Record<string, unknown> | undefined,
+  isV2: boolean,
 ): string | undefined {
   const measuredId = measuredAs(id);
   const lines: string[] = [];
@@ -1174,14 +1175,10 @@ function wireHeader(
   if (NONE_IS_REAL_OFF.has(measuredId)) {
     lines.push("# Off: reasoning_effort = none (0 reasoning tokens); no toggle field on this surface.");
   }
-  // Sources for the v2-only mid-conversation flags a file carries. The catalog
-  // does not state them, so sync keeps the values and only writes their source,
-  // because this provider's headers are authoritative.
-  if (capabilities?.["effort_updates"] === false) {
-    lines.push(midConversationLine(id));
-  }
-  if (capabilities?.["system_updates"] === false) {
-    lines.push(SYSTEM_UPDATES_LINE);
+  // The v2-only mid-conversation flags aren't in the catalog or the request
+  // schema, so sync never writes them. A card that carries none says so.
+  if (isV2 && !hasMidConversationFlag(capabilities ?? {})) {
+    lines.push(MID_CONVERSATION_LINE);
   }
   const cache = capabilities?.["cache"] as { explicit?: { ttl?: unknown } } | undefined;
   if (JSON.stringify(cache?.explicit?.ttl) === JSON.stringify(["5m", "1h"])) {
@@ -1190,9 +1187,11 @@ function wireHeader(
   return lines.length > 0 ? lines.join("\n") + "\n" : undefined;
 }
 
-function midConversationLine(id: string): string {
-  const schema = `${DOCS_ENDPOINT}?model=${encodeURIComponent(id)}&endpoint=${encodeURIComponent(CHAT_COMPLETIONS_TYPE)}`;
-  return `# Mid-conversation: served on POST /v1/chat/completions, where reasoning_effort and tools are per-request fields; the request schema has no per-turn effort or tool-change message (effort_updates = false, tools.updates = false). ${schema}`;
+function hasMidConversationFlag(capabilities: Record<string, unknown>): boolean {
+  const tools = capabilities["tools"] as { updates?: unknown } | undefined;
+  return capabilities["system_updates"] !== undefined
+    || capabilities["effort_updates"] !== undefined
+    || tools?.updates !== undefined;
 }
 
 function v2Capabilities(doc: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
@@ -1205,8 +1204,8 @@ function v2Capabilities(doc: Record<string, unknown> | undefined): Record<string
 const CACHE_LINE =
   `# Cache: the chat-completions catalog row prices cache writes at 5m (cache_write) and 1h (cache_write_1h), and the request schema takes cache_control { type: ephemeral, ttl: 5m | 1h }. ${API_ENDPOINT}`;
 
-const SYSTEM_UPDATES_LINE =
-  "# system_updates = false: the lab's own API keeps no mid-conversation system message for this closed-weight model (system_updates = false in its first-party file here), so a relay can't keep one in place.";
+const MID_CONVERSATION_LINE =
+  "# Mid-conversation: system_updates, effort_updates and tools.updates are unset; AI/ML API documents none of them and they weren't tested live.";
 
 /**
  * The remote id to report for a chat candidate, or `undefined` for records
@@ -1366,12 +1365,13 @@ export const aimlapi = {
     const outputCost = perMillion(units, "generated") ?? existing?.cost?.output;
     if (inputCost === undefined || outputCost === undefined) return undefined;
 
-    const capabilities = v2Capabilities(context.v2?.(model.id));
+    const v2 = context.v2?.(model.id);
+    const capabilities = v2Capabilities(v2);
     const cacheWrite = cacheWritePrices(model.id, units, capabilities);
 
     return {
       id: model.id,
-      header: wireHeader(model.id, reasoningOptions, capabilities),
+      header: wireHeader(model.id, reasoningOptions, capabilities, v2 !== undefined),
       v2Set: cacheWrite === undefined ? undefined : { "cost.text.input.cache.write": cacheWrite.v2 },
       model: factorBaseModel(
         base,

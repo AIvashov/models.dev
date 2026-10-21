@@ -20,7 +20,6 @@ reasoning = { supported = true, toggle = true }
 structured_output = true
 temperature = false
 top_k = false
-effort_updates = false
 stream_usage = true
 
 [limit]

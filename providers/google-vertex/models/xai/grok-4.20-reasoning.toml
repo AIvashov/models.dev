@@ -5,8 +5,8 @@
 # Automatic caching: billed at a cache-hit price with no cache API (https://cloud.google.com/gemini-enterprise-agent-platform/generative-ai/pricing).
 # Inputs: Text, Image (no PDF): https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/partner-models/grok/grok-4-20
 # Image formats (jpg/jpeg, png): https://docs.x.ai/developers/models
-# Mid-conversation updates: false. The Vertex OpenAI-compatible endpoint (endpoints/openapi) documents no in-place
-# system message, per-turn effort, or tool-change mechanism: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/call-open-model-apis
+# Mid-conversation updates: unset. The Vertex OpenAI-compatible endpoint (endpoints/openapi) documents no in-place
+# system message, per-turn effort, or tool-change mechanism, and none was tested live: https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/maas/call-open-model-apis
 schema = 2
 base_model = "xai/grok-4.20-0309-reasoning"
 
@@ -15,11 +15,8 @@ input = ["text", "image/jpeg", "image/png"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true }
 structured_output = true
-system_updates = false
-effort_updates = false
 cache = { supported = true, implicit = true }
 
 [limit]

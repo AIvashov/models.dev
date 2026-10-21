@@ -1,7 +1,7 @@
 # Effort: reasoning_effort = none|low|high|max (DeepSeek V4's levels; DigitalOcean accepts none..max, provider.toml).
 # Live 2026-10-20: omitted or none returns no reasoning_content; any other level reasons. Off is effort none, so no toggle.
-# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions, where reasoning_effort
-# and tools are per-request fields (effort_updates = false, tools.updates = false).
+# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions; effort_updates and tools.updates
+# are unset: DigitalOcean documents neither and they weren't tested live.
 # system_updates: live 2026-10-20, a system message after an assistant turn was delivered.
 # Cache: DigitalOcean-hosted, automatic prefix caching; prompt_cache_key scopes it. https://docs.digitalocean.com/products/inference/how-to/use-prompt-caching/
 schema = 2
@@ -10,12 +10,10 @@ name = "Deepseek V4 Pro"
 description = "Flagship DeepSeek model for coding, reasoning, and agentic work"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["none", "low", "high", "max"] }
 cache = { supported = true, implicit = true }
 structured_output = true
 system_updates = true
-effort_updates = false
 prompt_cache_key = true
 
 [limit]

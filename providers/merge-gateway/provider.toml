@@ -13,11 +13,8 @@
 #   `thinking = { type = "enabled"|"disabled", budget_tokens = N }`.
 #   https://github.com/merge-api/merge-gateway-ai-sdk-provider/blob/main/src/chat/index.ts
 # Mid-conversation flags (sources accessed 2026-10-20):
-# - effort_updates = false on every chat model: /v1/ai-sdk/chat/completions has no
-#   effort control at all, only `thinking`, and no per-turn configuration update.
-#   https://docs.merge.dev/merge-gateway/capabilities/reasoning (surface table)
-# - tools.updates = false: a Chat Completions `tools` array only; Gateway documents no
-#   tool addition/removal mechanism.
+# - effort_updates and tools.updates are unset: Gateway documents neither and they weren't
+#   tested live. https://docs.merge.dev/merge-gateway/capabilities/reasoning (surface table),
 #   https://docs.merge.dev/merge-gateway/capabilities/tool-calling
 # - system_updates is unset: the AI SDK provider sends later system messages in place,
 #   but Gateway doesn't document how each vendor route handles them.

@@ -18,7 +18,6 @@ output = ["text", "audio/wav"]
 tools = { supported = true, updates = false }
 reasoning = { supported = false }
 temperature = true
-effort_updates = false
 
 [limit]
 context = 32_768

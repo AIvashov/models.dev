@@ -14,8 +14,6 @@ output = ["text"]
 [capabilities]
 reasoning = { supported = true, toggle = true }
 structured_output = true
-effort_updates = false
-tools = { supported = true, updates = false }
 cache = { supported = true, implicit = true }
 
 [limit]

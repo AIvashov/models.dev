@@ -1,9 +1,7 @@
-# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions, where reasoning_effort
-# and tools are per-request fields (effort_updates = false, tools.updates = false).
+# Mid-conversation: served on POST https://inference.do-ai.run/v1/chat/completions; effort_updates and tools.updates
+# are unset: DigitalOcean documents neither and they weren't tested live.
 schema = 2
 base_model = "nvidia/nemotron-3-nano-30b-a3b"
 
 [capabilities]
-tools = { supported = true, updates = false }
 reasoning = { supported = true, effort = ["none", "low", "medium", "high", "max"] }
-effort_updates = false

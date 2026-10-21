@@ -5,8 +5,6 @@ base_model = "xai/grok-4.6"
 [capabilities]
 reasoning = { supported = true, effort = ["low", "medium", "high", "xhigh"] }
 structured_output = true
-effort_updates = false
-tools = { supported = true, updates = false }
 cache = { supported = true, implicit = true }
 
 [cost.text.input]

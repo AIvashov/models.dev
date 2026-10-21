@@ -1,6 +1,6 @@
 # Not included in subscription
 # effort_updates = false: NanoGPT documents per-turn effort updates (configuration_update) only for GPT-6 Astra and Claude Fable 5.1 (https://docs.nano-gpt.com/api-reference/miscellaneous/inline-reasoning-effort)
-# tools.updates = false: NanoGPT's Chat Completions API has no mid-conversation tool-change message (https://docs.nano-gpt.com/api-reference/endpoint/chat-completion)
+# tools.updates unset: NanoGPT documents no mid-conversation tool change and it wasn't tested live.
 schema = 2
 name = "Coding Router Max"
 description = "Automatic model router for matching prompts to suitable backends and budgets"
@@ -12,7 +12,7 @@ input = ["text"]
 output = ["text"]
 
 [capabilities]
-tools = { supported = true, updates = false }
+tools = { supported = true }
 reasoning = { supported = true }
 structured_output = true
 effort_updates = false
