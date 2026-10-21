@@ -406,8 +406,9 @@ export const ApiProtocolV2Values = [
   "embeddings",
   "embed-content",
   "moderations",
-  // The AI SDK Gateway's own API (`@ai-sdk/gateway`): POST <base>/language-model.
-  "language-model",
+  // The AI SDK Gateway's own API, which `@ai-sdk/gateway` calls: POST
+  // <base>/language-model, /image-model, /embedding-model…
+  "ai-gateway",
 ] as const;
 
 export const KnownApiProtocolV2 = z.enum(ApiProtocolV2Values);
@@ -738,7 +739,11 @@ export const LabModelV2 = z
 
 export type LabModelV2 = z.infer<typeof LabModelV2>;
 
-// `@opencode/ai` exports each provider entry point as `./providers/<path>`.
+// `sdk.opencodeai` is an `@opencode/ai` entry point (`./providers/<path>`) that
+// serves the table's protocol. Chat, Responses and Messages use dedicated entry
+// points that export `model()` (`@opencode/ai/providers/openai/chat`). Media APIs
+// have none: they name the provider's main module, and the protocol picks its
+// export (`[api.images]` → `@opencode/ai/providers/openai`, which exports `image`).
 const OpencodePackageV2 = z
   .string()
   .regex(
@@ -766,9 +771,9 @@ export const ProviderApiEntryV2 = z
     // Only models whose file lists this protocol use it (image, embedding,
     // decision… endpoints the provider's general models aren't served on).
     opt_in: z.literal(true).optional(),
-    // Legacy, v1-only, first table only: v1 published no provider `api` (the SDK's
-    // default base URL applied), so `base_url` doesn't become one.
-    legacy_api: z.literal(false).optional(),
+    // v1-only, first table only: `v1_api = false` when v1 published no provider
+    // `api` (the SDK's default base URL applied), so `base_url` doesn't become one.
+    v1_api: z.literal(false).optional(),
   })
   .strict();
 
@@ -794,8 +799,8 @@ export const ProviderApisV2 = z
       });
     }
     for (const [protocol, entry] of entries.slice(1)) {
-      if (entry?.legacy_api !== undefined) {
-        ctx.addIssue({ code: "custom", path: [protocol, "legacy_api"], message: "legacy_api only applies to the first table" });
+      if (entry?.v1_api !== undefined) {
+        ctx.addIssue({ code: "custom", path: [protocol, "v1_api"], message: "v1_api only applies to the first table" });
       }
     }
   });

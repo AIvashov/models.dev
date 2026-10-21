@@ -81,7 +81,7 @@ export function providerTomlToV1(
   return {
     ...rest,
     npm: first.sdk!.aisdk,
-    ...(first.legacy_api === false ? {} : { api: first.base_url }),
+    ...(first.v1_api === false ? {} : { api: first.base_url }),
   };
 }
 

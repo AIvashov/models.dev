@@ -504,14 +504,14 @@ price = 2
     });
   });
 
-  test("legacy_api = false keeps v1 without a provider api", async () => {
+  test("v1_api = false keeps v1 without a provider api", async () => {
     await withFixture(async (root) => {
       await write(
         root,
         "providers/gateway/provider.toml",
         apisProvider.replace(
           'sdk = { aisdk = "@ai-sdk/openai-compatible", opencodeai = "@opencode/ai/providers/openai-compatible" }\n',
-          'sdk = { aisdk = "@example/gateway" }\nlegacy_api = false\n',
+          'sdk = { aisdk = "@example/gateway" }\nv1_api = false\n',
         ),
       );
       await write(root, "providers/gateway/models/model.toml", v2Model());
@@ -521,7 +521,7 @@ price = 2
       expect(providers.gateway).not.toHaveProperty("api");
       const api = (await generateV2(path.join(root, "providers"))).gateway?.models.model?.api;
       expect(api?.["chat-completions"]?.base_url).toBe("https://example.com/v1");
-      expect(JSON.stringify(api)).not.toContain("legacy_api");
+      expect(JSON.stringify(api)).not.toContain("v1_api");
     });
   });
 
@@ -597,7 +597,7 @@ doc = "https://example.com/models"
 [api.responses]
 base_url = "https://example.com/v1"
 sdk = { aisdk = "@ai-sdk/openai" }
-legacy_api = false
+v1_api = false
 
 [api.chat-completions]
 base_url = "https://example.com/v1"
