@@ -2,8 +2,10 @@
 # Source: https://docs.together.ai/docs/serverless-models
 # Requests return 400 "Unable to access non-serverless model" (live 2026-10-21); the same model
 # under togethercomputer/EssentialAI-RNJ-1-Instruct returns the same error.
+# Knowledge 2024-10: kept from Together's earlier entry; unsourced (the lab publishes no cutoff).
 schema = 2
 base_model = "essentialai/rnj-1-instruct"
+knowledge = "2024-10"
 status = "deprecated"
 
 [cost.text.input]

@@ -4,9 +4,11 @@
 # Sources: https://docs.together.ai/docs/inference/chat/reasoning#enable-and-disable-reasoning
 # Deprecated: deepseek-ai/DeepSeek-V3.1 was removed from serverless on 2026-05-14
 # (https://docs.together.ai/docs/deprecations, accessed 2026-10-21); this ID returns 404.
+# Knowledge 2025-08: kept from Together's earlier entry; unsourced (the lab publishes no cutoff).
 schema = 2
 base_model = "deepseek/deepseek-v3.1"
 name = "DeepSeek V3.1"
+knowledge = "2025-08"
 status = "deprecated"
 
 [capabilities]

@@ -1,8 +1,10 @@
 # Deprecated: Together redirects DeepSeek-V3 to DeepSeek-V3.1, which was removed from serverless
 # on 2026-05-14 (https://docs.together.ai/docs/deprecations, accessed 2026-10-21); this ID
 # returns 503 (live 2026-10-21).
+# Knowledge 2024-07: kept from Together's earlier entry; unsourced (the lab publishes no cutoff).
 schema = 2
 base_model = "deepseek/deepseek-v3"
+knowledge = "2024-07"
 status = "deprecated"
 
 [limit]

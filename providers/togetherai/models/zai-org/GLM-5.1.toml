@@ -4,8 +4,10 @@
 # Sources: https://docs.together.ai/docs/inference/chat/reasoning#supported-models
 # Deprecated: removed from serverless on 2026-07-10 (https://docs.together.ai/docs/deprecations,
 # accessed 2026-10-21); requests return 400 "Unable to access non-serverless model".
+# Knowledge 2025-11: kept from Together's earlier entry; unsourced (the lab publishes no cutoff).
 schema = 2
 base_model = "zhipuai/glm-5.1"
+knowledge = "2025-11"
 status = "deprecated"
 
 [capabilities]
