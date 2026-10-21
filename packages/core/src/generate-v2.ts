@@ -16,6 +16,8 @@ import {
   LabModelV2,
   ProviderV2,
   type ApiEntryV2,
+  type AuthoredApiEntryV2,
+  type ProviderApisV2,
   type ApiProtocolV2,
   type ApiV2,
   type CompatibilityV2,
@@ -28,7 +30,7 @@ import {
   type OutputModalityV2,
   type ReasoningSupportV2,
 } from "./schema-v2.js";
-import { isSchemaV2, modelV2ToV1 } from "./translate.js";
+import { isSchemaV2, modelV2ToV1, providerApis, providerTomlToV1 } from "./translate.js";
 
 // ---------------------------------------------------------------------------
 // High-level catalog generation
@@ -76,7 +78,9 @@ async function loadProviderV2(
 ): Promise<ProviderV2> {
   const providerDir = path.dirname(providerPath);
   const providerID = path.basename(providerDir);
-  const rawProvider = { ...(await readToml(providerPath)), id: providerID, models: {} };
+  const toml = await readToml(providerPath);
+  const apis = providerApis(toml, { providerPath });
+  const rawProvider = { ...providerTomlToV1(toml, { providerPath }), id: providerID, models: {} };
   const v1Provider = parseWithCause(Provider, rawProvider, {
     providerPath,
     toml: rawProvider,
@@ -97,13 +101,14 @@ async function loadProviderV2(
       .join("/")
       .slice(0, -5);
     const rawModel = { ...(await readToml(modelPath)), id: modelID };
-    const v1Model = isSchemaV2(rawModel) ? modelV2ToV1(rawModel, { modelPath }) : rawModel;
+    const v1Model = isSchemaV2(rawModel) ? modelV2ToV1(rawModel, { modelPath }, apis) : rawModel;
     const resolved = resolveV1Model(v1Model, baseModels, modelPath);
     models[modelID] = withV2Fields(
       toModelV2(resolved, v1Provider),
       rawModel,
       labsV2,
       modelPath,
+      apis,
     );
   }
 
@@ -145,6 +150,7 @@ function withV2Fields(
   rawModel: Record<string, unknown>,
   labsV2: Record<string, LabModelV2>,
   modelPath: string,
+  apis: ProviderApisV2 | undefined,
 ): ModelV2 {
   const lab =
     typeof rawModel.base_model === "string" ? labsV2[rawModel.base_model] : undefined;
@@ -166,10 +172,56 @@ function withV2Fields(
       authored?.capabilities ?? {},
     ) as ModelV2["capabilities"],
   };
+  if (apis !== undefined) result.api = authoredApi(rawModel, authored, apis, modelPath);
+  else if (Object.values(authored?.api ?? {}).some((entry) => entry.sdk?.opencodeai !== undefined)) {
+    throw new Error("sdk.opencodeai in a model file needs the provider's [api.*] tables", {
+      cause: { modelPath },
+    });
+  }
   if (authored?.cost !== undefined) result.cost = authored.cost;
   if (authored?.experimental !== undefined) result.experimental = authored.experimental;
   if (authored?.metadata !== undefined) result.metadata = authored.metadata;
   return result;
+}
+
+// With provider `[api.*]` tables, a model is served on every table except opt-in
+// ones, or on exactly the tables its own file lists. Each of its tables takes the
+// fields it leaves out from the provider's table for the same protocol.
+function authoredApi(
+  rawModel: Record<string, unknown>,
+  authored: AuthoredModelV2 | undefined,
+  apis: ProviderApisV2,
+  modelPath: string,
+): ApiV2 {
+  if (authored === undefined && (rawModel.provider !== undefined || rawModel.interleaved !== undefined)) {
+    throw new Error("Migrate this file to v2: its provider has [api.*] tables", { cause: { modelPath } });
+  }
+  const own: Record<string, AuthoredApiEntryV2 | undefined> =
+    authored?.api ??
+    Object.fromEntries(
+      Object.entries(apis)
+        .filter(([, entry]) => !entry?.opt_in)
+        .map(([protocol]) => [protocol, undefined]),
+    );
+  return Object.fromEntries(
+    Object.entries(own).map(([protocol, entry]) => {
+      const base = apis[protocol as keyof ProviderApisV2];
+      const base_url = entry?.base_url ?? base?.base_url;
+      if (base_url === undefined) {
+        throw new Error(`[api.${protocol}] needs a base_url: the provider has no [api.${protocol}] table`, {
+          cause: { modelPath },
+        });
+      }
+      const sdk = { ...base?.sdk, ...entry?.sdk };
+      const compatibility = { ...base?.compatibility, ...entry?.compatibility };
+      const result: ApiEntryV2 = {
+        base_url,
+        ...(Object.keys(sdk).length > 0 ? { sdk } : {}),
+        ...(Object.keys(compatibility).length > 0 ? { compatibility } : {}),
+      };
+      return [protocol, result];
+    }),
+  ) as ApiV2;
 }
 
 function withoutSchema(raw: Record<string, unknown>) {

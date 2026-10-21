@@ -10,7 +10,7 @@ import {
   AuthoredModelShape,
   ModelMetadata,
 } from "./schema.js";
-import { isSchemaV2, labModelV2ToV1, modelV2ToV1 } from "./translate.js";
+import { isSchemaV2, labModelV2ToV1, modelV2ToV1, providerApis, providerTomlToV1 } from "./translate.js";
 
 const BaseModel = AuthoredModelShape
   .deepPartial()
@@ -101,11 +101,13 @@ async function generateProviders(
     absolute: true,
   })) {
     const providerID = path.basename(path.dirname(providerPath));
-    const { v1_alias, ...toml } = await import(providerPath, {
+    const { v1_alias, ...raw } = await import(providerPath, {
       with: {
         type: "toml",
       },
     }).then((mod) => mod.default);
+    const apis = providerApis(raw, { providerPath });
+    const toml = providerTomlToV1(raw, { providerPath });
     toml.id = providerID;
     toml.models = {};
     const provider = Provider.safeParse(toml);
@@ -150,7 +152,7 @@ async function generateProviders(
       raw.id = modelID;
       // Models marked `v2_only = true` are only published in the v2 API.
       if (isSchemaV2(raw) && raw.v2_only === true) continue;
-      const toml = isSchemaV2(raw) ? modelV2ToV1(raw, { modelPath }) : raw;
+      const toml = isSchemaV2(raw) ? modelV2ToV1(raw, { modelPath }, apis) : raw;
       if (toml.base_model !== undefined) {
         const baseModel = BaseModel.safeParse(toml);
         if (!baseModel.success) {
