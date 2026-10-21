@@ -1,6 +1,29 @@
+# APIs, in order: the first is the default, and v1's `npm` comes from it.
+# https://vercel.com/docs/ai-gateway/sdks-and-apis (accessed 2026-10-21): the AI SDK,
+# Chat Completions, Anthropic Messages and Responses/OpenResponses all take every
+# language model.
+# AI SDK: @ai-sdk/gateway posts to its own API under https://ai-gateway.vercel.sh/v4/ai
+# (/language-model, /image-model, /video-model, /embedding-model, /reranking-model,
+# /speech-model, /transcription-model, wss /realtime-model). It has no Live model.
+# https://github.com/vercel/ai/tree/main/packages/gateway
+# Responses: https://ai-sdk.dev/providers/ai-sdk-providers/open-responses
+# OpenCode: @opencode/ai/providers/vercel-ai-gateway/{chat,responses,messages} on /v1, and the
+# main module's `experimental` evaluate. It doesn't call /v4/ai, so the `ai-gateway` and media
+# tables have no opencodeai.
+# Opt-in APIs, for the models whose files list them (media tables are the
+# @ai-sdk/gateway routes those pages document through the AI SDK):
+# evaluate (POST /v1/evaluate): https://vercel.com/docs/ai-gateway/modalities/decision
+# decisions (POST /v1/decisions, "any decision model"): https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-decisions
+# images: https://vercel.com/docs/ai-gateway/modalities/image-generation
+# videos: https://vercel.com/docs/ai-gateway/modalities/video-generation
+# embeddings: https://vercel.com/docs/ai-gateway/modalities/embeddings
+# rerank: https://vercel.com/docs/ai-gateway/modalities/reranking
+# speech (/v4/ai/speech-model): https://vercel.com/docs/ai-gateway/modalities/text-to-speech
+# transcriptions (/v4/ai/transcription-model): https://vercel.com/docs/ai-gateway/modalities/speech-to-text
+# realtime: https://vercel.com/docs/ai-gateway/modalities/realtime
+# live (wss /v4/ai/live-model): https://vercel.com/docs/ai-gateway/modalities/realtime/gpt-live
 name = "Vercel AI Gateway"
 env = ["AI_GATEWAY_API_KEY"]
-npm = "@ai-sdk/gateway"
 # Reasoning HTTP format (accessed 2026-06-25):
 # POST https://ai-gateway.vercel.sh/v1/chat/completions
 # JSON reasoning.enabled: true | false; reasoning.effort: "none" | "minimal" |
@@ -12,3 +35,68 @@ npm = "@ai-sdk/gateway"
 # https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-chat-completions/advanced
 # https://vercel.com/docs/ai-gateway/models-and-providers/provider-filtering-and-ordering
 doc = "https://github.com/vercel/ai/tree/5eb85cc45a259553501f535b8ac79a77d0e79223/packages/gateway"
+
+[api.ai-gateway]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+v1_api = false
+
+[api.chat-completions]
+base_url = "https://ai-gateway.vercel.sh/v1"
+sdk = { aisdk = "@ai-sdk/openai-compatible", opencodeai = "@opencode/ai/providers/vercel-ai-gateway/chat" }
+
+[api.responses]
+base_url = "https://ai-gateway.vercel.sh/v1"
+sdk = { aisdk = "@ai-sdk/open-responses", opencodeai = "@opencode/ai/providers/vercel-ai-gateway/responses" }
+
+[api.messages]
+base_url = "https://ai-gateway.vercel.sh/v1"
+sdk = { aisdk = "@ai-sdk/anthropic", opencodeai = "@opencode/ai/providers/vercel-ai-gateway/messages" }
+
+[api.evaluate]
+base_url = "https://ai-gateway.vercel.sh/v1"
+sdk = { opencodeai = "@opencode/ai/providers/vercel-ai-gateway" }
+opt_in = true
+
+[api.decisions]
+base_url = "https://ai-gateway.vercel.sh/v1"
+opt_in = true
+
+[api.images]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.videos]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.embeddings]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.rerank]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.speech]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.transcriptions]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.realtime]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+sdk = { aisdk = "@ai-sdk/gateway" }
+opt_in = true
+
+[api.live]
+base_url = "https://ai-gateway.vercel.sh/v4/ai"
+opt_in = true

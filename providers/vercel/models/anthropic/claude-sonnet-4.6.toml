@@ -11,8 +11,14 @@ effort_updates = false
 [limit]
 output = 128_000
 
-[api.chat-completions]
+[api.ai-gateway]
 compatibility = { replay_reasoning = true }
+
+[api.chat-completions]
+
+[api.responses]
+
+[api.messages]
 
 [cost.text.input]
 price = 3

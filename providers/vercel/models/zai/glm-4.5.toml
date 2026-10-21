@@ -12,8 +12,14 @@ effort_updates = false
 context = 128_000
 output = 96_000
 
-[api.chat-completions]
+[api.ai-gateway]
 compatibility = { replay_reasoning = true }
+
+[api.chat-completions]
+
+[api.responses]
+
+[api.messages]
 
 [cost.text.input]
 price = 0.6
