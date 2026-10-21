@@ -8,8 +8,14 @@ tools = { supported = true, updates = false }
 reasoning = { supported = true, budget = {} }
 effort_updates = false
 
-[api.chat-completions]
+[api.language-model]
 compatibility = { replay_reasoning = true }
+
+[api.chat-completions]
+
+[api.responses]
+
+[api.messages]
 
 [cost.text.input]
 price = 0.3

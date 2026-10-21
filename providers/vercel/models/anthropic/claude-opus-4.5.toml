@@ -9,8 +9,14 @@ reasoning = { supported = true, effort = ["none", "low", "medium", "high"], budg
 system_updates = false
 effort_updates = false
 
-[api.chat-completions]
+[api.language-model]
 compatibility = { replay_reasoning = true }
+
+[api.chat-completions]
+
+[api.responses]
+
+[api.messages]
 
 [cost.text.input]
 price = 5

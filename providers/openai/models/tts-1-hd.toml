@@ -7,6 +7,8 @@ v2_only = true
 base_model = "openai/tts-1-hd"
 status = "deprecated"
 
+[api.speech]
+
 [cost.text.input]
 unit = "character"
 price = 30

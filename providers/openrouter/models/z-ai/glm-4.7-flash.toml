@@ -18,6 +18,10 @@ output = 117_964
 [api.chat-completions]
 compatibility = { reasoning_field = "reasoning_details" }
 
+[api.responses]
+
+[api.messages]
+
 [cost.text.input]
 price = 0.0605
 

@@ -7,6 +7,8 @@ v2_only = true
 base_model = "openai/whisper-1"
 status = "deprecated"
 
+[api.transcriptions]
+
 [cost.audio.input]
 unit = "minute"
 price = 0.006

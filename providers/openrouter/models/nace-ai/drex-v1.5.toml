@@ -7,6 +7,10 @@ structured_output = true
 [limit]
 context = 131_072
 
+[api.systemone]
+
+[api.decisions]
+
 [cost.text.input]
 price = 0.04
 

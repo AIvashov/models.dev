@@ -24,6 +24,8 @@ cache = { supported = false }
 context = 200_000
 output = 100_000
 
+[api.responses]
+
 [cost.text.input]
 price = 20
 

@@ -8,6 +8,8 @@ base_model = "openai/gpt-realtime-1.5"
 [capabilities]
 structured_output = false
 
+[api.realtime]
+
 [cost.text.input]
 price = 4
 cache = { read = 0.4 }

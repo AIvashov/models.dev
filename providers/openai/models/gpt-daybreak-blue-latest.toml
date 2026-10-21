@@ -17,6 +17,8 @@ cache = { supported = true, implicit = { min_tokens = 1_024 }, explicit = { ttl 
 prompt_cache_key = true
 service_tier = ["flex", "priority"]
 
+[api.responses]
+
 [cost.text.input]
 price = 4
 cache = { read = 0.4, write = 5 }

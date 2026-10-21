@@ -16,6 +16,10 @@ effort_updates = false
 [api.chat-completions]
 compatibility = { reasoning_field = "reasoning_content" }
 
+[api.responses]
+
+[api.messages]
+
 [cost.text.input]
 price = 1
 cache = { read = 0.2 }

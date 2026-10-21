@@ -20,6 +20,8 @@ temperature = false
 context = 8_192
 output = 1_536
 
+[api.embeddings]
+
 [cost.text.input]
 price = 0.1
 

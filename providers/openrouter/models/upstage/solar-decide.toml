@@ -20,6 +20,10 @@ temperature = false
 context = 524_288
 output = 0
 
+[api.systemone]
+
+[api.decisions]
+
 [cost.text.input]
 price = 0.05
 cache = { read = 0.05 }

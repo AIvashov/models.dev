@@ -5,3 +5,5 @@ status = "deprecated"
 
 [limit]
 input = 0
+
+[api.images]

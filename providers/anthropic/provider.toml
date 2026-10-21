@@ -1,4 +1,17 @@
+# APIs, in order: the first is the default, and v1's `npm` comes from it.
+# Messages: https://platform.claude.com/docs/en/api/messages
+# OpenAI SDK compatibility (Chat Completions at https://api.anthropic.com/v1/, "primarily
+# intended to test and compare model capabilities"):
+# https://platform.claude.com/docs/en/api/openai-sdk (accessed 2026-10-21)
 name = "Anthropic"
 env = ["ANTHROPIC_API_KEY"]
-npm = "@ai-sdk/anthropic"
 doc = "https://docs.anthropic.com/en/docs/about-claude/models"
+
+[api.messages]
+base_url = "https://api.anthropic.com/v1"
+sdk = { aisdk = "@ai-sdk/anthropic", opencodeai = "@opencode/ai/providers/anthropic" }
+legacy_api = false
+
+[api.chat-completions]
+base_url = "https://api.anthropic.com/v1"
+sdk = { aisdk = "@ai-sdk/openai-compatible", opencodeai = "@opencode/ai/providers/openai-compatible" }

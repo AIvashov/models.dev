@@ -1,4 +1,52 @@
+# APIs, in order: the first is the default, and v1's `npm` comes from it.
+# Each model page lists the endpoints that model supports ("Endpoints" table);
+# models served on other endpoints list their own [api.*] tables.
+# https://developers.openai.com/api/docs/models (accessed 2026-10-21)
+# https://developers.openai.com/api/docs/guides/migrate-to-responses
+# AI SDK: `openai.responses()`, `.chat()`, `.image()`, `.embedding()`, `.speech()`, `.transcription()`
+# https://ai-sdk.dev/providers/ai-sdk-providers/openai
+# OpenCode: @opencode/ai/providers/openai/responses and /chat
 name = "OpenAI"
 env = ["OPENAI_API_KEY"]
-npm = "@ai-sdk/openai"
 doc = "https://platform.openai.com/docs/models"
+
+[api.responses]
+base_url = "https://api.openai.com/v1"
+sdk = { aisdk = "@ai-sdk/openai", opencodeai = "@opencode/ai/providers/openai/responses" }
+legacy_api = false
+
+[api.chat-completions]
+base_url = "https://api.openai.com/v1"
+sdk = { aisdk = "@ai-sdk/openai", opencodeai = "@opencode/ai/providers/openai/chat" }
+
+[api.images]
+base_url = "https://api.openai.com/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+opt_in = true
+
+[api.embeddings]
+base_url = "https://api.openai.com/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+opt_in = true
+
+[api.speech]
+base_url = "https://api.openai.com/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+opt_in = true
+
+[api.transcriptions]
+base_url = "https://api.openai.com/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+opt_in = true
+
+[api.realtime]
+base_url = "https://api.openai.com/v1"
+opt_in = true
+
+[api.live]
+base_url = "https://api.openai.com/v1"
+opt_in = true
+
+[api.moderations]
+base_url = "https://api.openai.com/v1"
+opt_in = true

@@ -25,6 +25,8 @@ context = 400_000
 input = 272_000
 output = 128_000
 
+[api.responses]
+
 [cost.text.input]
 price = 21
 

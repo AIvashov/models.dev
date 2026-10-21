@@ -1,6 +1,23 @@
+# APIs, in order: the first is the default, and v1's `npm` and `api` come from it.
+# Every model is served on Chat Completions, Responses and Anthropic Messages:
+# https://openrouter.ai/docs/api/api-reference/chat/create-a-chat-completion
+# https://openrouter.ai/docs/api/reference/responses/overview
+# https://openrouter.ai/docs/api/api-reference/anthropic-messages/create-a-message
+# (accessed 2026-10-21; the Messages reasoning controls "work on every reasoning model, not only Claude")
+# Opt-in APIs, for the models whose files list them:
+# decision models: https://openrouter.ai/docs/api/api-reference/systemone/submit-a-system-one-request
+#   and https://openrouter.ai/docs/api/api-reference/alphadecisions/submit-a-decisions-request (POST /api/alpha/decisions)
+# https://openrouter.ai/docs/api/api-reference/images/generate-an-image
+# https://openrouter.ai/docs/api/api-reference/video-generation/submit-a-video-generation-request
+# https://openrouter.ai/docs/api/api-reference/embeddings/submit-an-embedding-request
+# https://openrouter.ai/docs/api/api-reference/tts/create-speech
+# https://openrouter.ai/docs/api/api-reference/stt/create-transcription
+# https://openrouter.ai/docs/api/api-reference/rerank/submit-a-rerank-request
+# AI SDK: @openrouter/ai-sdk-provider calls /chat/completions, /embeddings, /images and /videos;
+# Responses uses @ai-sdk/open-responses, Messages @ai-sdk/anthropic, and the OpenAI-shaped
+# audio endpoints @ai-sdk/openai. https://ai-sdk.dev/providers/ai-sdk-providers/open-responses
 name = "OpenRouter"
 env = ["OPENROUTER_API_KEY"]
-npm = "@openrouter/ai-sdk-provider"
 # Raw Chat: `reasoning.enabled` toggles, `reasoning.effort` selects effort,
 # `reasoning.max_tokens` sets a budget, and top-level `reasoning_effort` is an alias.
 # https://openrouter.ai/docs/guides/best-practices/reasoning-tokens (accessed 2026-06-25)
@@ -13,5 +30,54 @@ npm = "@openrouter/ai-sdk-provider"
 # `provider.require_parameters = true` to exclude routes that ignore requested controls.
 # https://openrouter.ai/api/v1/models (accessed 2026-06-25)
 # https://openrouter.ai/docs/guides/routing/provider-selection#requiring-providers-to-support-all-parameters (accessed 2026-06-25)
-api = "https://openrouter.ai/api/v1"
 doc = "https://openrouter.ai/models"
+
+[api.chat-completions]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@openrouter/ai-sdk-provider", opencodeai = "@opencode/ai/providers/openrouter" }
+
+[api.responses]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@ai-sdk/open-responses", opencodeai = "@opencode/ai/providers/openai-compatible/responses" }
+
+[api.messages]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@ai-sdk/anthropic", opencodeai = "@opencode/ai/providers/anthropic-compatible" }
+
+[api.systemone]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { opencodeai = "@opencode/ai/providers/openrouter" }
+opt_in = true
+
+[api.decisions]
+base_url = "https://openrouter.ai/api/alpha"
+opt_in = true
+
+[api.images]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@openrouter/ai-sdk-provider" }
+opt_in = true
+
+[api.videos]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@openrouter/ai-sdk-provider" }
+opt_in = true
+
+[api.embeddings]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@openrouter/ai-sdk-provider" }
+opt_in = true
+
+[api.speech]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+opt_in = true
+
+[api.transcriptions]
+base_url = "https://openrouter.ai/api/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+opt_in = true
+
+[api.rerank]
+base_url = "https://openrouter.ai/api/v1"
+opt_in = true
