@@ -1,6 +1,6 @@
 import { expect, test } from "bun:test";
 
-import { formatModelV2, formatTomlValue, patchModelV2, providerModelToV2 } from "../src/model-file-v2.js";
+import { formatModelV2, formatTomlValue, patchModelV2, providerModelToV2, withDefaultApis } from "../src/model-file-v2.js";
 import { modelV2ToV1 } from "../src/translate.js";
 
 test("patchModelV2 keeps v2 reasoning data when sync inherits reasoning from the lab", () => {
@@ -164,4 +164,47 @@ test('v2 effort "default" stays the literal "default" in v1', () => {
 
   const back = modelV2ToV1({ ...(Bun.TOML.parse(formatModelV2(doc)) as Record<string, unknown>), id: "m" });
   expect(back.reasoning_options).toEqual([{ type: "effort", values: ["none", "default", "low"] }]);
+});
+
+test("patchModelV2 keeps every API table of a file with several", () => {
+  const api = {
+    "chat-completions": { compatibility: { reasoning_field: "reasoning_details" } },
+    responses: {},
+    messages: {},
+  };
+  const doc = { schema: 2, base_model: "moonshotai/kimi-k2.6", api, cost: { text: { input: { price: 1 }, output: { price: 2 } } } };
+  const before = modelV2ToV1({ ...doc, id: "m" });
+  const { id: _id, ...after } = { ...before, cost: { input: 3, output: 4 } };
+
+  // Unchanged v1 API fields: the file's tables are kept as they are, in order.
+  expect(Object.entries(patchModelV2(doc, before, after).api)).toEqual(Object.entries(api));
+  // A synced change to the default API rewrites the first table and keeps the rest.
+  const changed = { ...after, interleaved: { field: "reasoning_content" } };
+  expect(Object.entries(patchModelV2(doc, before, changed).api)).toEqual([
+    ["chat-completions", { compatibility: { reasoning_field: "reasoning_content" } }],
+    ["responses", {}],
+    ["messages", {}],
+  ]);
+  // Without v1 API fields, the default API stays listed as an empty table.
+  const { interleaved: _interleaved, ...plain } = after as Record<string, unknown>;
+  expect(Object.entries(patchModelV2(doc, before, plain).api)).toEqual([
+    ["chat-completions", {}],
+    ["responses", {}],
+    ["messages", {}],
+  ]);
+});
+
+test("withDefaultApis lists the provider's other default APIs after a file's own table", () => {
+  const apis = {
+    "chat-completions": { base_url: "https://example.com/v1" },
+    responses: { base_url: "https://example.com/v1" },
+    images: { base_url: "https://example.com/v1", opt_in: true as const },
+  };
+  const doc = providerModelToV2({ interleaved: { field: "reasoning_content" } }, "chat-completions");
+  expect(Object.entries(withDefaultApis(doc, apis).api)).toEqual([
+    ["chat-completions", { compatibility: { reasoning_field: "reasoning_content" } }],
+    ["responses", {}],
+  ]);
+  // A file without its own table keeps inheriting the provider's list.
+  expect(withDefaultApis(providerModelToV2({ cost: { input: 1, output: 2 } }), apis).api).toBeUndefined();
 });
