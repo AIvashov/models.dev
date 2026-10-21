@@ -437,6 +437,235 @@ price = 2
   });
 });
 
+describe("provider [api.*] tables", () => {
+  const apisProvider = `name = "Gateway"
+env = ["API_KEY"]
+doc = "https://example.com/models"
+
+[api.chat-completions]
+base_url = "https://example.com/v1"
+sdk = { aisdk = "@ai-sdk/openai-compatible", opencodeai = "@opencode/ai/providers/openai-compatible" }
+
+[api.responses]
+base_url = "https://example.com/v1"
+sdk = { aisdk = "@ai-sdk/openai", opencodeai = "@opencode/ai/providers/openai/responses" }
+
+[api.messages]
+base_url = "https://example.com/anthropic/v1"
+sdk = { aisdk = "@ai-sdk/anthropic", opencodeai = "@opencode/ai/providers/anthropic-compatible" }
+
+[api.images]
+base_url = "https://example.com/v1"
+sdk = { aisdk = "@example/ai-sdk-provider" }
+opt_in = true
+`;
+
+  const v2Model = (api = "") => `schema = 2
+name = "Lab Model"
+description = "Example model for catalog generation and inheritance tests"
+open_weights = true
+release_date = "2026-01-02"
+
+[modalities]
+input = ["text"]
+output = ["text"]
+
+[capabilities]
+tools = { supported = true }
+reasoning = { supported = false }
+
+[limit]
+context = 400_000
+output = 128_000
+${api}
+[cost.text.input]
+price = 1
+
+[cost.text.output]
+price = 2
+`;
+
+  test("models get every API except opt-in ones, in order, and v1 gets the first", async () => {
+    await withFixture(async (root) => {
+      await write(root, "providers/gateway/provider.toml", apisProvider);
+      await write(root, "providers/gateway/models/model.toml", v2Model());
+
+      const providers = await generate(path.join(root, "providers"));
+      expect(providers.gateway?.npm).toBe("@ai-sdk/openai-compatible");
+      expect(providers.gateway?.api).toBe("https://example.com/v1");
+      expect(providers.gateway?.models.model?.provider).toBeUndefined();
+
+      const api = (await generateV2(path.join(root, "providers"))).gateway?.models.model?.api;
+      expect(Object.keys(api ?? {})).toEqual(["chat-completions", "responses", "messages"]);
+      expect(api?.messages).toEqual({
+        base_url: "https://example.com/anthropic/v1",
+        sdk: { aisdk: "@ai-sdk/anthropic", opencodeai: "@opencode/ai/providers/anthropic-compatible" },
+      });
+    });
+  });
+
+  test("legacy_api = false keeps v1 without a provider api", async () => {
+    await withFixture(async (root) => {
+      await write(
+        root,
+        "providers/gateway/provider.toml",
+        apisProvider.replace(
+          'sdk = { aisdk = "@ai-sdk/openai-compatible", opencodeai = "@opencode/ai/providers/openai-compatible" }\n',
+          'sdk = { aisdk = "@example/gateway" }\nlegacy_api = false\n',
+        ),
+      );
+      await write(root, "providers/gateway/models/model.toml", v2Model());
+
+      const providers = await generate(path.join(root, "providers"));
+      expect(providers.gateway?.npm).toBe("@example/gateway");
+      expect(providers.gateway).not.toHaveProperty("api");
+      const api = (await generateV2(path.join(root, "providers"))).gateway?.models.model?.api;
+      expect(api?.["chat-completions"]?.base_url).toBe("https://example.com/v1");
+      expect(JSON.stringify(api)).not.toContain("legacy_api");
+    });
+  });
+
+  test("a model's own tables replace the list and take missing fields from the provider", async () => {
+    await withFixture(async (root) => {
+      await write(root, "providers/gateway/provider.toml", apisProvider);
+      // Restricts the list to one provider API, with a reasoning field on it.
+      await write(
+        root,
+        "providers/gateway/models/chat-only.toml",
+        v2Model(`
+[api.chat-completions]
+compatibility = { reasoning_field = "reasoning_content" }
+`),
+      );
+      // Uses an opt-in API, and one the provider doesn't list.
+      await write(
+        root,
+        "providers/gateway/models/image.toml",
+        v2Model(`
+[api.images]
+
+[api.videos]
+base_url = "https://example.com/video/v1"
+sdk = { aisdk = "@example/video" }
+`),
+      );
+      // Swaps the AI SDK package and keeps the provider's OpenCode package.
+      await write(
+        root,
+        "providers/gateway/models/custom.toml",
+        v2Model(`
+[api.responses]
+sdk = { aisdk = "@example/responses" }
+`),
+      );
+
+      const models = (await generateV2(path.join(root, "providers"))).gateway?.models;
+      expect(models?.["chat-only"]?.api).toEqual({
+        "chat-completions": {
+          base_url: "https://example.com/v1",
+          sdk: { aisdk: "@ai-sdk/openai-compatible", opencodeai: "@opencode/ai/providers/openai-compatible" },
+          compatibility: { reasoning_field: "reasoning_content" },
+        },
+      });
+      expect(models?.image?.api).toEqual({
+        images: { base_url: "https://example.com/v1", sdk: { aisdk: "@example/ai-sdk-provider" } },
+        videos: { base_url: "https://example.com/video/v1", sdk: { aisdk: "@example/video" } },
+      });
+      expect(models?.custom?.api).toEqual({
+        responses: {
+          base_url: "https://example.com/v1",
+          sdk: { aisdk: "@example/responses", opencodeai: "@opencode/ai/providers/openai/responses" },
+        },
+      });
+
+      // v1 keeps reading only the first table's own fields.
+      const providers = await generate(path.join(root, "providers"));
+      expect(providers.gateway?.models["chat-only"]?.interleaved).toEqual({ field: "reasoning_content" });
+      expect(providers.gateway?.models.image?.provider).toBeUndefined();
+    });
+  });
+
+  test("a model table without an SDK takes the provider's for its v1 shape", async () => {
+    await withFixture(async (root) => {
+      await write(
+        root,
+        "providers/openai/provider.toml",
+        `name = "OpenAI"
+env = ["API_KEY"]
+doc = "https://example.com/models"
+
+[api.responses]
+base_url = "https://example.com/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+legacy_api = false
+
+[api.chat-completions]
+base_url = "https://example.com/v1"
+sdk = { aisdk = "@ai-sdk/openai" }
+`,
+      );
+      await write(root, "providers/openai/models/responses-only.toml", v2Model("\n[api.responses]\n"));
+      await write(root, "providers/openai/models/chat-only.toml", v2Model("\n[api.chat-completions]\n"));
+
+      const models = (await generate(path.join(root, "providers"))).openai?.models;
+      // Responses is @ai-sdk/openai's default, so it is no v1 shape; Chat is.
+      expect(models?.["responses-only"]?.provider).toBeUndefined();
+      expect(models?.["chat-only"]?.provider).toEqual({ shape: "completions" });
+    });
+  });
+
+  test("rejects tables that contradict v1 or miss a base URL", async () => {
+    const cases: Array<[string, string, string | RegExp]> = [
+      [apisProvider.replace('env = ["API_KEY"]', 'env = ["API_KEY"]\nnpm = "@ai-sdk/openai"'), v2Model(), "can't set npm"],
+      [apisProvider.replace("[api.chat-completions]", "[api.chat-completions]\nopt_in = true"), v2Model(), /can't be opt_in/],
+      [apisProvider, v2Model("\n[api.rerank]\n"), "[api.rerank] needs a base_url"],
+    ];
+    for (const [provider, model, message] of cases) {
+      await withFixture(async (root) => {
+        await write(root, "providers/gateway/provider.toml", provider);
+        await write(root, "providers/gateway/models/model.toml", model);
+        await expect(generateV2(path.join(root, "providers"))).rejects.toThrow(message);
+      });
+    }
+  });
+
+  test("without provider tables, v2 still derives the one API and rejects model opencodeai", async () => {
+    await withFixture(async (root) => {
+      await write(root, "providers/provider/provider.toml", providerToml("Provider"));
+      await write(
+        root,
+        "providers/provider/models/model.toml",
+        v2Model(`
+[api.chat-completions]
+compatibility = { reasoning_field = "reasoning_content" }
+`),
+      );
+      expect((await generateV2(path.join(root, "providers"))).provider?.models.model?.api).toEqual({
+        responses: {
+          base_url: "https://api.openai.com/v1",
+          sdk: { aisdk: "@ai-sdk/openai", opencodeai: "@opencode/ai/providers/openai/responses" },
+          compatibility: { reasoning_field: "reasoning_content" },
+        },
+      });
+
+    });
+    await withFixture(async (root) => {
+      await write(root, "providers/provider/provider.toml", providerToml("Provider"));
+      await write(
+        root,
+        "providers/provider/models/model.toml",
+        v2Model(`
+[api.responses]
+sdk = { opencodeai = "@opencode/ai/providers/openai/responses" }
+`),
+      );
+      await expect(generateV2(path.join(root, "providers"))).rejects.toThrow(
+        "sdk.opencodeai in a model file needs the provider's [api.*] tables",
+      );
+    });
+  });
+});
+
 function providerToml(name: string) {
   return `name = "${name}"
 npm = "@ai-sdk/openai"
