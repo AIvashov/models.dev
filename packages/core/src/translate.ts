@@ -1,8 +1,10 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import path from "node:path";
 
 import {
   AuthoredModelV2,
   LabModelV2,
+  ProviderApisV2,
   type AuthoredApiEntryV2,
   type CostV2,
   type CostWhenV2,
@@ -27,8 +29,60 @@ export function readLabModel(filePath: string, modelID: string) {
 export function readProviderModel(filePath: string) {
   const toml = Bun.TOML.parse(readFileSync(filePath, "utf8")) as Record<string, unknown>;
   if (!isSchemaV2(toml)) return toml;
-  const { id: _id, ...model } = modelV2ToV1({ ...toml, id: "" }, { modelPath: filePath });
+  const providerDir = /^(.*[\\/]providers[\\/][^\\/]+)[\\/]models[\\/]/.exec(filePath)?.[1];
+  const apis = providerDir === undefined ? undefined : readProviderApis(path.join(providerDir, "provider.toml"));
+  const { id: _id, ...model } = modelV2ToV1({ ...toml, id: "" }, { modelPath: filePath }, apis);
   return model;
+}
+
+const providerApisCache = new Map<string, ProviderApisV2 | undefined>();
+
+// A provider.toml's `[api.*]` tables, read once per path.
+export function readProviderApis(providerPath: string) {
+  if (!providerApisCache.has(providerPath)) {
+    const toml = existsSync(providerPath)
+      ? (Bun.TOML.parse(readFileSync(providerPath, "utf8")) as Record<string, unknown>)
+      : {};
+    providerApisCache.set(providerPath, providerApis(toml, { providerPath }));
+  }
+  return providerApisCache.get(providerPath);
+}
+
+// A provider.toml's `[api.<protocol>]` tables, in order, or undefined when it
+// still sets v1's `npm` and `api` directly.
+export function providerApis(
+  toml: Record<string, unknown>,
+  cause: Record<string, unknown> = {},
+): ProviderApisV2 | undefined {
+  if (toml.api === undefined || typeof toml.api === "string") return undefined;
+  const parsed = ProviderApisV2.safeParse(toml.api);
+  if (!parsed.success) {
+    parsed.error.cause = { ...cause, toml };
+    throw parsed.error;
+  }
+  if (toml.npm !== undefined) {
+    throw new Error("provider.toml with [api.*] tables can't set npm: v1's npm is the first table's sdk.aisdk", {
+      cause: { ...cause, toml },
+    });
+  }
+  return parsed.data;
+}
+
+// Reads a provider.toml as v1 fields. v1 has one API per provider: with
+// `[api.*]` tables, its `npm` and `api` come from the first one.
+export function providerTomlToV1(
+  toml: Record<string, unknown>,
+  cause: Record<string, unknown> = {},
+): Record<string, unknown> {
+  const apis = providerApis(toml, cause);
+  if (apis === undefined) return toml;
+  const { api: _api, ...rest } = toml;
+  const first = Object.values(apis)[0]!;
+  return {
+    ...rest,
+    npm: first.sdk!.aisdk,
+    ...(first.legacy_api === false ? {} : { api: first.base_url }),
+  };
 }
 
 export function labModelV2ToV1(
@@ -77,9 +131,13 @@ export function labModelV2ToV1(
 // Translates a v2 provider model file into the v1 authored fields it stands for.
 // v2-only data (MIME modalities, cache TTLs, service tiers…) has no v1 field and
 // is left out; the v2 output reads it from the file directly.
+// `apis` are the provider's `[api.*]` tables, when it lists them: a model table
+// without an SDK takes the provider's for the same protocol, which decides
+// whether the protocol becomes a v1 `shape`.
 export function modelV2ToV1(
   toml: Record<string, unknown>,
   cause: Record<string, unknown> = {},
+  apis?: ProviderApisV2,
 ): Record<string, unknown> {
   const { schema: _schema, ...raw } = toml;
   const parsed = AuthoredModelV2.safeParse(raw);
@@ -124,7 +182,7 @@ export function modelV2ToV1(
     status: model.status,
     cost,
     experimental: toV1Experimental(model, cost),
-    ...toV1Api(model.api),
+    ...toV1Api(model.api, apis),
   });
 }
 
@@ -132,8 +190,10 @@ export function modelV2ToV1(
 // `interleaved` its reasoning requirement. With several `[api.<protocol>]`
 // tables, the first one in the file is the default and becomes the v1 API.
 // The protocol only becomes a v1 `shape` where it isn't the SDK's default
-// (OpenAI and Azure default to Responses), unless `legacy_shape` keeps one.
-function toV1Api(api: Record<string, AuthoredApiEntryV2> | undefined) {
+// (OpenAI and Azure default to Responses), unless `legacy_shape` keeps one. A
+// table without an SDK uses the provider's table for the same protocol, or the
+// provider's default.
+function toV1Api(api: Record<string, AuthoredApiEntryV2> | undefined, apis: ProviderApisV2 | undefined) {
   const first = Object.entries(api ?? {})[0];
   if (first === undefined) return {};
   const [protocol, { base_url, sdk, compatibility, legacy_shape }] = first;
@@ -141,7 +201,12 @@ function toV1Api(api: Record<string, AuthoredApiEntryV2> | undefined) {
   if (legacy_shape !== undefined && toProtocol(legacy_shape) !== protocol) {
     throw new Error(`legacy_shape = "${legacy_shape}" doesn't match [api.${protocol}]`);
   }
-  const shape = legacy_shape ?? toV1Shape(protocol, npm);
+  const sdkNpm =
+    npm ??
+    (apis === undefined
+      ? undefined
+      : (apis[protocol as keyof ProviderApisV2]?.sdk?.aisdk ?? Object.values(apis)[0]?.sdk?.aisdk));
+  const shape = legacy_shape ?? toV1Shape(protocol, sdkNpm);
   const provider = withoutUndefined({ npm, api: base_url, shape });
   const field = compatibility?.reasoning_field;
   return withoutUndefined({

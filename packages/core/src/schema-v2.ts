@@ -405,6 +405,9 @@ export const ApiProtocolV2Values = [
   "transcriptions",
   "embeddings",
   "embed-content",
+  "moderations",
+  // The AI SDK Gateway's own API (`@ai-sdk/gateway`): POST <base>/language-model.
+  "language-model",
 ] as const;
 
 export const KnownApiProtocolV2 = z.enum(ApiProtocolV2Values);
@@ -735,13 +738,79 @@ export const LabModelV2 = z
 
 export type LabModelV2 = z.infer<typeof LabModelV2>;
 
-// A provider model file's own API, when it differs from the provider's default:
-// another SDK, base URL or protocol, or a reasoning wire requirement. Omitted
-// parts come from the provider.
+// `@opencode/ai` exports each provider entry point as `./providers/<path>`.
+const OpencodePackageV2 = z
+  .string()
+  .regex(
+    /^@opencode\/ai\/providers\/[a-z0-9-]+(\/[a-z0-9-]+)*$/,
+    "Must be an @opencode/ai/providers/... entry point",
+  );
+
+const AuthoredSdkV2 = z
+  .object({
+    aisdk: z.string().min(1).optional(),
+    opencodeai: OpencodePackageV2.optional(),
+  })
+  .strict()
+  .refine((sdk) => sdk.aisdk !== undefined || sdk.opencodeai !== undefined, "sdk needs aisdk or opencodeai");
+
+// One API a provider serves (`[api.<protocol>]` in provider.toml). The tables are
+// ordered: the first is the provider's default API, and v1's provider `npm` and
+// `api` come from it. Every model is served on every table except `opt_in` ones,
+// unless its own file lists its APIs.
+export const ProviderApiEntryV2 = z
+  .object({
+    base_url: ApiBaseUrlV2,
+    sdk: AuthoredSdkV2.optional(),
+    compatibility: CompatibilityV2.optional(),
+    // Only models whose file lists this protocol use it (image, embedding,
+    // decision… endpoints the provider's general models aren't served on).
+    opt_in: z.literal(true).optional(),
+    // Legacy, v1-only, first table only: v1 published no provider `api` (the SDK's
+    // default base URL applied), so `base_url` doesn't become one.
+    legacy_api: z.literal(false).optional(),
+  })
+  .strict();
+
+export type ProviderApiEntryV2 = z.infer<typeof ProviderApiEntryV2>;
+
+export const ProviderApisV2 = z
+  .record(KnownApiProtocolV2, ProviderApiEntryV2)
+  .superRefine((apis, ctx) => {
+    const entries = Object.entries(apis);
+    const [first] = entries;
+    if (first === undefined) {
+      ctx.addIssue({ code: "custom", message: "List at least one [api.<protocol>] table" });
+      return;
+    }
+    if (first[1]?.opt_in) {
+      ctx.addIssue({ code: "custom", path: [first[0], "opt_in"], message: "The first (default) API can't be opt_in" });
+    }
+    if (first[1]?.sdk?.aisdk === undefined) {
+      ctx.addIssue({
+        code: "custom",
+        path: [first[0], "sdk", "aisdk"],
+        message: "The first (default) API needs sdk.aisdk: it is the v1 provider npm",
+      });
+    }
+    for (const [protocol, entry] of entries.slice(1)) {
+      if (entry?.legacy_api !== undefined) {
+        ctx.addIssue({ code: "custom", path: [protocol, "legacy_api"], message: "legacy_api only applies to the first table" });
+      }
+    }
+  });
+
+export type ProviderApisV2 = z.infer<typeof ProviderApisV2>;
+
+// A provider model file's own APIs. Without provider tables, a file has one table
+// for where it differs from the provider's default: another SDK, base URL or
+// protocol, or a reasoning wire requirement. With provider tables, the file's
+// tables are its complete API list, and each takes the fields it leaves out from
+// the provider's table for the same protocol.
 export const AuthoredApiEntryV2 = z
   .object({
     base_url: ApiBaseUrlV2.optional(),
-    sdk: z.object({ aisdk: z.string().min(1) }).strict().optional(),
+    sdk: AuthoredSdkV2.optional(),
     compatibility: CompatibilityV2.pick({ reasoning_field: true, replay_reasoning: true })
       .strict()
       .optional(),

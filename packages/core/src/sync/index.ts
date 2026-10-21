@@ -13,9 +13,11 @@ import {
   providerModelToV2,
   resolvedFlags,
   sameV1Model,
+  withDefaultApis,
   withoutModeCosts,
 } from "../model-file-v2.js";
-import { isSchemaV2, labModelV2ToV1, modelV2ToV1 } from "../translate.js";
+import { isSchemaV2, labModelV2ToV1, modelV2ToV1, providerApis, providerTomlToV1 } from "../translate.js";
+import type { ProviderApisV2 } from "../schema-v2.js";
 import { openMissingModelIssues } from "./missing-issues.js";
 import { MissingReasoningOptionsError } from "./missing-reasoning-options.js";
 import { aiand } from "./providers/aiand.js";
@@ -316,7 +318,8 @@ export async function syncProvider<SourceModel>(
 ): Promise<SyncResult> {
   console.log(`\nSyncing ${provider.name}...`);
 
-  const existingState = await readExisting(provider.modelsDir);
+  const apis = await readProviderApisFor(provider.modelsDir);
+  const existingState = await readExisting(provider.modelsDir, apis);
   const { models: existing, brokenSymlinks } = existingState;
   let { modelMetadata } = existingState;
   const sourceModels = provider.parseModels(await provider.fetchModels());
@@ -387,7 +390,7 @@ export async function syncProvider<SourceModel>(
 
     if ("v2" in translated) {
       // Validates the file the same way readers will translate it.
-      modelV2ToV1({ ...translated.v2, id: translated.id }, { provider: provider.id, path: relativePath });
+      modelV2ToV1({ ...translated.v2, id: translated.id }, { provider: provider.id, path: relativePath }, apis);
       const translatedHeader = translated.header === undefined ? "" : leadingComments(translated.header);
       const header = provider.authoritativeHeaders
         ? translatedHeader
@@ -530,7 +533,8 @@ export async function syncProvider<SourceModel>(
             undefined,
             withBaseModalities(file.model, modelMetadata ?? {}),
             v2Notices,
-            await newModelProtocol(provider.modelsDir, file.model),
+            await newModelProtocol(provider.modelsDir, file.model, apis),
+            apis,
             undefined,
             file.v2Set,
           ) ?? file.content
@@ -575,6 +579,7 @@ export async function syncProvider<SourceModel>(
         model,
         v2Notices,
         undefined,
+        apis,
         resolved,
         file.v2Set,
       );
@@ -725,7 +730,8 @@ function v2Content(
   before: ExistingModel | undefined,
   model: z.infer<typeof SyncedAuthoredModel>,
   notices: string[],
-  protocol?: string,
+  protocol: string | undefined,
+  apis: ProviderApisV2 | undefined,
   resolved?: { before: InheritedFlags; after: InheritedFlags },
   v2Set?: Record<string, unknown>,
 ) {
@@ -736,13 +742,14 @@ function v2Content(
       : multiplierModes(doc, before, synced);
     const after = withoutModeCosts(synced, carried);
     const next = doc === undefined || before === undefined
-      ? providerModelToV2(after, protocol)
+      ? withDefaultApis(providerModelToV2(after, protocol), apis)
       : patchModelV2(doc, withoutModeCosts(before, carried), after, resolved);
     for (const [key, value] of Object.entries(v2Set ?? {})) setPath(next, key, value);
     const content = header + formatModelV2(next);
     const translated = modelV2ToV1(
       { ...(Bun.TOML.parse(content) as Record<string, unknown>), id },
       { modelPath: relativePath },
+      apis,
     );
     if (sameV1Model(withoutModeCosts(translated, carried), after)) return content;
     throw new Error("the v2 file does not reproduce the synced fields");
@@ -790,17 +797,29 @@ function setPath(doc: Record<string, unknown>, key: string, value: unknown) {
 }
 
 // A new v2 file puts `provider` and `interleaved` fields under the model's API
-// protocol, resolved from provider.toml the same way migrate-v2 does.
-async function newModelProtocol(modelsDir: string, model: z.infer<typeof SyncedAuthoredModel>) {
+// protocol, resolved from provider.toml the same way migrate-v2 does: the first
+// `[api.*]` table, or the protocol v1's fields imply.
+async function newModelProtocol(
+  modelsDir: string,
+  model: z.infer<typeof SyncedAuthoredModel>,
+  apis: ProviderApisV2 | undefined,
+) {
+  if (apis !== undefined) return Object.keys(apis)[0];
   const file = Bun.file(path.join(path.dirname(modelsDir), "provider.toml"));
   if (!(await file.exists())) return undefined;
   const provider = {
-    ...(Bun.TOML.parse(await file.text()) as Record<string, unknown>),
+    ...providerTomlToV1(Bun.TOML.parse(await file.text()) as Record<string, unknown>),
     id: path.basename(path.dirname(modelsDir)),
   } as unknown as Provider;
   const shape = "provider" in model ? model.provider?.shape : undefined;
   const npm = ("provider" in model ? model.provider?.npm : undefined) ?? provider.npm;
   return resolveProtocol(model as unknown as Model, provider, npm, shape);
+}
+
+async function readProviderApisFor(modelsDir: string) {
+  const file = Bun.file(path.join(path.dirname(modelsDir), "provider.toml"));
+  if (!(await file.exists())) return undefined;
+  return providerApis(Bun.TOML.parse(await file.text()) as Record<string, unknown>);
 }
 
 function baseMetadata(
@@ -916,7 +935,7 @@ export function syncProviderMatrix() {
   };
 }
 
-async function readExisting(modelsDir: string) {
+async function readExisting(modelsDir: string, apis?: ProviderApisV2) {
   const existing = new Map<string, {
     authored: ExistingModel;
     toml: ExistingModel;
@@ -943,7 +962,7 @@ async function readExisting(modelsDir: string) {
     const raw = Bun.TOML.parse(text) as Record<string, unknown>;
     const v2 = isSchemaV2(raw) ? raw : undefined;
     const { id: _id, ...translated } = v2
-      ? modelV2ToV1({ ...raw, id: file.slice(0, -5) }, { modelPath: filePath })
+      ? modelV2ToV1({ ...raw, id: file.slice(0, -5) }, { modelPath: filePath }, apis)
       : raw;
     const parsed = ExistingModel.safeParse(v2 ? translated : raw);
     if (!parsed.success) {

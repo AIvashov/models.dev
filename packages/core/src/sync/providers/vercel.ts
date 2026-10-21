@@ -119,6 +119,7 @@ export const vercel = {
       header: translated.reasoning_options?.some((option) => option.type === "toggle")
         ? "# Toggle: reasoning.enabled = true|false\n# https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-chat-completions/reasoning\n"
         : undefined,
+      v2Set: model.type === "evaluation" ? DECISION_V2_SET : undefined,
     };
   },
   sameModel(current, desired) {
@@ -437,6 +438,10 @@ function sameVercelModel(current: ExistingModel, desired: SyncedModel) {
 // ---------------------------------------------------------------------------
 // Image, video, embedding, rerank, speech, transcription and realtime models
 // ---------------------------------------------------------------------------
+
+// Decision models are only served on the opt-in decision tables in provider.toml,
+// so a new file lists them. A file's own API list is kept.
+const DECISION_V2_SET = { api: (current: unknown) => current ?? { evaluate: {}, decisions: {} } };
 
 type MediaType = "image" | "video" | "embedding" | "reranking" | "speech" | "transcription" | "realtime";
 

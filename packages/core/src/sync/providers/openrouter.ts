@@ -257,11 +257,15 @@ export const openrouter = {
       header: translated.reasoning_options?.some((option) => option.type === "toggle")
         ? "# Toggle: reasoning.enabled = true|false\n# https://openrouter.ai/docs/guides/best-practices/reasoning-tokens\n"
         : undefined,
-      v2Set: catalog?.v2Set,
+      v2Set: isDecisionModel(model) ? { ...catalog?.v2Set, ...DECISION_V2_SET } : catalog?.v2Set,
       notices: catalog?.notices,
     };
   },
 } satisfies SyncProvider<OpenRouterModel>;
+
+// Decision models are only served on the opt-in decision tables in
+// provider.toml, so a new file lists them. A file's own API list is kept.
+const DECISION_V2_SET = { api: (current: unknown) => current ?? { systemone: {}, decisions: {} } };
 
 function isUnavailable(model: OpenRouterModel) {
   return (

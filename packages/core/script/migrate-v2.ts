@@ -13,11 +13,19 @@ import {
   formatTomlValue,
   providerModelToV2,
   sameV1Model,
+  withDefaultApis,
 } from "../src/model-file-v2.js";
 import { resolveProtocol } from "../src/generate-v2.js";
 import { ModelMetadata, type Model, type Provider } from "../src/schema.js";
 import { findComments } from "../src/toml-comments.js";
-import { isSchemaV2, labModelV2ToV1, modelV2ToV1, readLabModel } from "../src/translate.js";
+import {
+  isSchemaV2,
+  labModelV2ToV1,
+  modelV2ToV1,
+  providerApis,
+  providerTomlToV1,
+  readLabModel,
+} from "../src/translate.js";
 
 const root = path.join(import.meta.dirname, "..", "..", "..");
 const RAW_TABLES = /^\[\[(benchmarks|links|weights)\]\]\s*$/;
@@ -30,15 +38,15 @@ if ((kind !== "lab" && kind !== "provider") || id === undefined) {
 
 const dir =
   kind === "lab" ? path.join(root, "models", id) : path.join(root, "providers", id, "models");
-const providerToml =
+const rawProvider =
   kind === "provider"
-    ? ({
-        ...(Bun.TOML.parse(
-          await Bun.file(path.join(root, "providers", id, "provider.toml")).text(),
-        ) as Record<string, unknown>),
-        id,
-      } as unknown as Provider)
+    ? (Bun.TOML.parse(
+        await Bun.file(path.join(root, "providers", id, "provider.toml")).text(),
+      ) as Record<string, unknown>)
     : undefined;
+const apis = rawProvider && providerApis(rawProvider);
+const providerToml =
+  rawProvider && ({ ...providerTomlToV1(rawProvider), id } as unknown as Provider);
 let migrated = 0;
 for await (const file of new Bun.Glob("**/*.toml").scan({ cwd: dir, absolute: true })) {
   const text = await Bun.file(file).text();
@@ -113,14 +121,17 @@ function migrateProvider(text: string, toml: Record<string, unknown>, modelID: s
     }
   }
   const provider = toml.provider as { npm?: string; shape?: "responses" | "completions" } | undefined;
-  const protocol = resolveProtocol(
-    { ...toml, id: modelID } as unknown as Model,
-    providerToml!,
-    provider?.npm ?? providerToml!.npm,
-    provider?.shape,
-  );
-  const next = [...header, formatModelV2(providerModelToV2(toml, protocol))].join("\n");
-  const after = modelV2ToV1({ ...(Bun.TOML.parse(next) as Record<string, unknown>), id: modelID });
+  const protocol = apis
+    ? Object.keys(apis)[0]
+    : resolveProtocol(
+        { ...toml, id: modelID } as unknown as Model,
+        providerToml!,
+        provider?.npm ?? providerToml!.npm,
+        provider?.shape,
+      );
+  const doc = withDefaultApis(providerModelToV2(toml, protocol), apis);
+  const next = [...header, formatModelV2(doc)].join("\n");
+  const after = modelV2ToV1({ ...(Bun.TOML.parse(next) as Record<string, unknown>), id: modelID }, {}, apis);
   if (!sameV1Model(toml, after)) {
     console.error(JSON.stringify({ before: toml, after }, null, 2));
     throw new Error(`Round trip changed ${modelID}`);

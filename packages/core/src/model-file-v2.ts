@@ -104,6 +104,18 @@ function apiEntry(model: Record<string, any>, fallback: string | undefined) {
   return { [protocol]: entry };
 }
 
+// With provider `[api.*]` tables, a file's own tables are its whole API list. A
+// file that needs a table for its default API (for v1's `provider` or
+// `interleaved` fields) also lists the provider's other default APIs, so it
+// stays on all of them.
+export function withDefaultApis(doc: Doc, apis: Record<string, { opt_in?: true } | undefined> | undefined) {
+  if (doc.api === undefined || apis === undefined) return doc;
+  for (const [protocol, entry] of Object.entries(apis)) {
+    if (!entry?.opt_in && doc.api[protocol] === undefined) doc.api[protocol] = {};
+  }
+  return doc;
+}
+
 // Applies a v1 change (`before` → `after`) to an existing v2 file. Fields whose
 // v1 view didn't change keep their v2 data (MIME modalities, cache TTLs, extra
 // capabilities, multipliers); changed prices are updated in place.
@@ -166,7 +178,11 @@ export function patchModelV2(
       if (capabilities !== undefined) mode.capabilities = capabilities;
     }
   }
-  if (same("provider", "interleaved") && doc.api !== undefined) next.api = doc.api;
+  if (doc.api !== undefined) {
+    const api = same("provider", "interleaved") ? doc.api : withOtherApis(next.api, doc.api);
+    if (api === undefined) delete next.api;
+    else next.api = api;
+  }
   if (doc.metadata !== undefined) next.metadata = doc.metadata;
   if (doc.v2_only !== undefined) next.v2_only = doc.v2_only;
   return next;
@@ -181,6 +197,17 @@ function mergeModalities(current: string[] | undefined, synced: string[]) {
     const own = current.filter((item) => toV1Modality(item) === toV1Modality(value));
     return own.length > 0 ? own : [value];
   });
+}
+
+// A synced change to the default (first) API keeps the file's other tables.
+function withOtherApis(first: Doc | undefined, current: Doc) {
+  const [protocol, ...rest] = Object.keys(current);
+  if (protocol === undefined || rest.length === 0) return first;
+  const head = first ?? { [protocol]: {} };
+  return {
+    ...head,
+    ...Object.fromEntries(rest.filter((key) => !(key in head)).map((key) => [key, current[key]])),
+  };
 }
 
 // Modes priced by a multiplier in the v2 file whose v1 price sync only carried
