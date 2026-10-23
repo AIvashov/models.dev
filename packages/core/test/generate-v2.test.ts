@@ -90,7 +90,7 @@ describe("v2 catalog generation", () => {
       output: ["text"],
     });
     expect(translated.capabilities).toEqual({
-      tools: { supported: true },
+      tools: { supported: true, updates: false },
       reasoning: {
         supported: true,
         toggle: true,
@@ -99,6 +99,8 @@ describe("v2 catalog generation", () => {
       },
       structured_output: true,
       temperature: true,
+      system_updates: false,
+      effort_updates: false,
     });
     expect(translated.cost).toEqual({
       text: {

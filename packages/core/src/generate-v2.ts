@@ -213,7 +213,10 @@ export function toModelV2(model: Model, provider: Provider): ModelV2 {
       output: outputModalities,
     },
     capabilities: {
-      tools: model.tool_call ? { supported: true } : { supported: false },
+      // An update flag that isn't authored means the host doesn't support it.
+      tools: model.tool_call ? { supported: true, updates: false } : { supported: false },
+      system_updates: false,
+      effort_updates: false,
       reasoning: toReasoningSupportV2(model),
       ...(model.structured_output !== undefined && type !== "decision"
         ? { structured_output: model.structured_output }

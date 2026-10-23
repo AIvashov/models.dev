@@ -113,22 +113,24 @@ export const KnownToolGrammarV2 = z.enum(ToolGrammarV2Values);
 export const ToolGrammarV2 = openEnum(ToolGrammarV2Values);
 export type ToolGrammarV2 = z.infer<typeof ToolGrammarV2>;
 
+const toolsSupportedV2 = {
+  supported: z.literal(true),
+  strict: z.boolean().optional(),
+  choice: z.array(ToolChoiceV2).optional(),
+  search: z.boolean().optional(),
+  grammar: z.array(ToolGrammarV2).optional(),
+  updates: z.boolean().optional(),
+};
+
+// Files may leave `updates` out, which means false. The API always states it.
+export const AuthoredToolsSupportV2 = z.discriminatedUnion("supported", [
+  z.object({ supported: z.literal(false) }).strict(),
+  z.object(toolsSupportedV2).strict(),
+]);
+
 export const ToolsSupportV2 = z.discriminatedUnion("supported", [
-  z
-    .object({
-      supported: z.literal(false),
-    })
-    .strict(),
-  z
-    .object({
-      supported: z.literal(true),
-      strict: z.boolean().optional(),
-      choice: z.array(ToolChoiceV2).optional(),
-      search: z.boolean().optional(),
-      grammar: z.array(ToolGrammarV2).optional(),
-      updates: z.boolean().optional(),
-    })
-    .strict(),
+  z.object({ supported: z.literal(false) }).strict(),
+  z.object({ ...toolsSupportedV2, updates: z.boolean() }).strict(),
 ]);
 
 export type ToolsSupportV2 = z.infer<typeof ToolsSupportV2>;
@@ -268,9 +270,11 @@ export const KnownServiceTierV2 = z.enum(ServiceTierV2Values);
 export const ServiceTierV2 = openEnum(ServiceTierV2Values);
 export type ServiceTierV2 = z.infer<typeof ServiceTierV2>;
 
-export const CapabilitiesV2 = z
+// Files may leave `system_updates` / `effort_updates` out, which means false.
+// The API always states them.
+export const AuthoredCapabilitiesV2 = z
   .object({
-    tools: ToolsSupportV2,
+    tools: AuthoredToolsSupportV2,
     reasoning: ReasoningSupportV2,
     cache: CacheSupportV2.optional(),
     structured_output: z.boolean().optional(),
@@ -285,6 +289,12 @@ export const CapabilitiesV2 = z
     service_tier: z.array(ServiceTierV2).optional(),
   })
   .strict();
+
+export const CapabilitiesV2 = AuthoredCapabilitiesV2.extend({
+  tools: ToolsSupportV2,
+  system_updates: z.boolean(),
+  effort_updates: z.boolean(),
+}).strict();
 
 export type CapabilitiesV2 = z.infer<typeof CapabilitiesV2>;
 
@@ -363,7 +373,7 @@ export const CompatibilityV2 = z
 
 export type CompatibilityV2 = z.infer<typeof CompatibilityV2>;
 
-export const CapabilitiesOverrideV2 = CapabilitiesV2.partial();
+export const CapabilitiesOverrideV2 = AuthoredCapabilitiesV2.partial();
 export type CapabilitiesOverrideV2 = z.infer<typeof CapabilitiesOverrideV2>;
 
 export const ApiBaseUrlV2 = z.union([
@@ -730,7 +740,7 @@ export type ModelV2 = z.infer<typeof ModelV2>;
 // (reasoning controls, structured output, cache, service tiers…) is per provider.
 export const LabCapabilitiesV2 = z
   .object({
-    tools: ToolsSupportV2,
+    tools: AuthoredToolsSupportV2,
     reasoning: z.object({ supported: z.boolean() }).strict(),
     temperature: z.boolean(),
     top_p: z.boolean(),
