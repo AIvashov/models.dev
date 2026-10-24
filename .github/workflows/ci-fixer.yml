@@ -33,7 +33,7 @@ jobs:
       FAILED_RUN_URL: ${{ github.event.workflow_run.html_url }}
       FAILED_WORKFLOW: ${{ github.event.workflow_run.name }}
     outputs:
-      sha: ${{ steps.checkout.outputs.commit }}
+      sha: ${{ steps.save.outputs.sha }}
       changed: ${{ steps.save.outputs.changed }}
 
     steps:
@@ -93,7 +93,6 @@ jobs:
           key: ${{ steps.budget-key.outputs.key }}
 
       - name: Checkout code
-        id: checkout
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
@@ -157,6 +156,7 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf .ci-fixer-budget
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git add -A
           if git diff --cached --quiet; then
             echo "No safe repository changes were made."
