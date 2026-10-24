@@ -73,7 +73,7 @@ jobs:
       - name: Check budget marker
         id: budget-cache
         if: steps.budget.outputs.run == 'true'
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .ci-fixer-budget
           key: ${{ steps.budget-key.outputs.key }}
@@ -87,7 +87,7 @@ jobs:
 
       - name: Save budget marker
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
         with:
           path: .ci-fixer-budget
           key: ${{ steps.budget-key.outputs.key }}
@@ -213,6 +213,7 @@ jobs:
               *) echo "Unexpected changed path: $path" >&2; exit 1 ;;
             esac
           done < <(git diff --cached --name-only)
+          git diff --cached --raw --no-abbrev | awk '$2 != "100644" && $2 != "000000" { print "Unexpected file mode: " $0; bad = 1 } END { exit bad }' >&2
 
       - name: Create pull request
         env:
