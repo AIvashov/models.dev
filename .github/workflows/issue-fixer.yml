@@ -23,8 +23,6 @@ jobs:
       issues: read
     env:
       ISSUE_NUMBER: ${{ github.event.issue.number || github.event.client_payload.issue_number }}
-    outputs:
-      sha: ${{ steps.save.outputs.sha }}
 
     steps:
       - name: Checkout code
@@ -44,6 +42,9 @@ jobs:
 
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
+
+      - name: Move git metadata out of the workspace
+        run: mv .git "$RUNNER_TEMP/repo.git"
 
       - name: Run issue fixer
         env:
@@ -72,10 +73,11 @@ jobs:
           fi
 
       - name: Save changes
-        id: save
+        env:
+          GIT_DIR: ${{ runner.temp }}/repo.git
+          GIT_WORK_TREE: ${{ github.workspace }}
         run: |
           set -euo pipefail
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git add -A
           git diff --cached --binary > "$RUNNER_TEMP/out/changes.patch"
           jq -r .title "$ISSUE_FILE" > "$RUNNER_TEMP/out/title.txt"
@@ -99,7 +101,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ needs.fix.outputs.sha }}
+          ref: dev
           persist-credentials: false
 
       - name: Setup git committer
@@ -131,8 +133,8 @@ jobs:
               models/*.toml|providers/*.toml) ;;
               *) echo "Unexpected changed path: $path" >&2; exit 1 ;;
             esac
-          done < <(git diff --cached --name-only)
-          git diff --cached --raw --no-abbrev | awk '$2 != "100644" && $2 != "000000" { print "Unexpected file mode: " $0; bad = 1 } END { exit bad }' >&2
+          done < <(git diff --cached --no-renames --name-only)
+          git diff --cached --no-renames --raw --no-abbrev | awk '$2 != "100644" && $2 != "000000" { print "Unexpected file mode: " $0; bad = 1 } END { exit bad }' >&2
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Comment on issue
@@ -156,7 +158,11 @@ jobs:
 
           git switch -c "$BRANCH"
           git commit -m "$TITLE"
-          git push origin "$BRANCH"
+          git push --force origin "$BRANCH"
+
+          if [ -n "$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --base dev --json number --jq '.[0].number')" ]; then
+            exit 0
+          fi
 
           PR_BODY="$RUNNER_TEMP/issue-fixer-pr-body.md"
           {
