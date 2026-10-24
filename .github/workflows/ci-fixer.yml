@@ -33,7 +33,6 @@ jobs:
       FAILED_RUN_URL: ${{ github.event.workflow_run.html_url }}
       FAILED_WORKFLOW: ${{ github.event.workflow_run.name }}
     outputs:
-      sha: ${{ steps.save.outputs.sha }}
       changed: ${{ steps.save.outputs.changed }}
 
     steps:
@@ -124,6 +123,10 @@ jobs:
             mv "$LOG_FILE.tail" "$LOG_FILE"
           fi
 
+      - name: Move git metadata out of the workspace
+        if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
+        run: mv .git "$RUNNER_TEMP/repo.git"
+
       - name: Run CI fixer
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
         env:
@@ -153,10 +156,12 @@ jobs:
       - name: Save changes
         id: save
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
+        env:
+          GIT_DIR: ${{ runner.temp }}/repo.git
+          GIT_WORK_TREE: ${{ github.workspace }}
         run: |
           set -euo pipefail
           rm -rf .ci-fixer-budget
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git add -A
           if git diff --cached --quiet; then
             echo "No safe repository changes were made."
@@ -187,7 +192,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: ${{ needs.fix.outputs.sha }}
+          ref: dev
           persist-credentials: false
 
       - name: Setup git committer
@@ -212,8 +217,8 @@ jobs:
               models/*.toml|providers/*.toml|packages/*|package.json|bun.lock|sst.config.ts|sst-env.d.ts|tsconfig.json) ;;
               *) echo "Unexpected changed path: $path" >&2; exit 1 ;;
             esac
-          done < <(git diff --cached --name-only)
-          git diff --cached --raw --no-abbrev | awk '$2 != "100644" && $2 != "000000" { print "Unexpected file mode: " $0; bad = 1 } END { exit bad }' >&2
+          done < <(git diff --cached --no-renames --name-only)
+          git diff --cached --no-renames --raw --no-abbrev | awk '$2 != "100644" && $2 != "100755" && $2 != "000000" { print "Unexpected file mode: " $0; bad = 1 } END { exit bad }' >&2
 
       - name: Create pull request
         env:
@@ -225,7 +230,7 @@ jobs:
 
           git switch -c "$BRANCH"
           git commit -m "$TITLE"
-          git push origin "$BRANCH"
+          git push --force origin "$BRANCH"
 
           gh label create automation --repo "$GITHUB_REPOSITORY" --color "0E8A16" --description "Automated repository maintenance" >/dev/null 2>&1 || true
           gh label create ci-fixer --repo "$GITHUB_REPOSITORY" --color "D93F0B" --description "Automated fix for failed dev CI" >/dev/null 2>&1 || true
