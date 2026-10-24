@@ -131,6 +131,7 @@ jobs:
               *) echo "Unexpected changed path: $path" >&2; exit 1 ;;
             esac
           done < <(git diff --cached --name-only)
+          git diff --cached --raw --no-abbrev | awk '$2 != "100644" && $2 != "000000" { print "Unexpected file mode: " $0; bad = 1 } END { exit bad }' >&2
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Comment on issue
