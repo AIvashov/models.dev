@@ -198,8 +198,26 @@ jobs:
         id: check
         run: |
           set -euo pipefail
-          rm -rf models providers packages package.json bun.lock sst.config.ts sst-env.d.ts tsconfig.json
-          tar -xf "$RUNNER_TEMP/out/files.tar"
+          STAGE="$RUNNER_TEMP/stage"
+          mkdir "$STAGE"
+          tar -xf "$RUNNER_TEMP/out/files.tar" -C "$STAGE"
+          bad="$({
+            find "$STAGE" -mindepth 1 -maxdepth 1 ! -name models ! -name providers ! -name packages ! -name package.json ! -name bun.lock ! -name sst.config.ts ! -name sst-env.d.ts ! -name tsconfig.json
+            find "$STAGE" \( -name .git -o -name '.git*' \)
+            find "$STAGE" ! -type f ! -type d ! -type l
+            find "$STAGE" -type f -links +1
+          } | head -20)"
+          if [ -n "$bad" ]; then
+            echo "Unexpected entries in the agent's files:" >&2
+            echo "$bad" >&2
+            exit 1
+          fi
+          for entry in models providers packages package.json bun.lock sst.config.ts sst-env.d.ts tsconfig.json; do
+            rm -rf "$entry"
+            if [ -e "$STAGE/$entry" ] || [ -L "$STAGE/$entry" ]; then
+              cp -a "$STAGE/$entry" .
+            fi
+          done
           git add -A models providers packages package.json bun.lock sst.config.ts sst-env.d.ts tsconfig.json
           if git diff --cached --quiet; then
             echo "No safe repository changes were made."
