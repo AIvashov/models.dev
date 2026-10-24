@@ -43,9 +43,6 @@ jobs:
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
 
-      - name: Keep a clean copy of git metadata
-        run: cp -a .git "$RUNNER_TEMP/repo.git"
-
       - name: Run issue fixer
         env:
           OPENCODE_API_KEY: ${{ secrets.OPENCODE_API_KEY }}
@@ -72,14 +69,10 @@ jobs:
             exit 1
           fi
 
-      - name: Save changes
-        env:
-          GIT_DIR: ${{ runner.temp }}/repo.git
-          GIT_WORK_TREE: ${{ github.workspace }}
+      - name: Save catalog
         run: |
           set -euo pipefail
-          git add -A
-          git diff --cached --binary > "$RUNNER_TEMP/out/changes.patch"
+          tar -cf "$RUNNER_TEMP/out/catalog.tar" models providers
           jq -r .title "$ISSUE_FILE" > "$RUNNER_TEMP/out/title.txt"
 
       - name: Upload changes
@@ -117,17 +110,18 @@ jobs:
           name: issue-fixer
           path: ${{ runner.temp }}/out
 
-      - name: Apply changes
+      - name: Check changes
         id: apply
         run: |
           set -euo pipefail
-          PATCH="$RUNNER_TEMP/out/changes.patch"
-          if [ ! -s "$PATCH" ]; then
+          rm -rf models providers
+          tar -xf "$RUNNER_TEMP/out/catalog.tar"
+          git add -A models providers
+          if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          git apply --index "$PATCH"
           while IFS= read -r path; do
             case "$path" in
               models/*.toml|providers/*.toml) ;;
