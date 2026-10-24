@@ -95,7 +95,7 @@ jobs:
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: dev
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Install opencode
@@ -123,9 +123,9 @@ jobs:
             mv "$LOG_FILE.tail" "$LOG_FILE"
           fi
 
-      - name: Move git metadata out of the workspace
+      - name: Keep a clean copy of git metadata
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
-        run: mv .git "$RUNNER_TEMP/repo.git"
+        run: cp -a .git "$RUNNER_TEMP/repo.git"
 
       - name: Run CI fixer
         if: steps.budget.outputs.run == 'true' && steps.budget-cache.outputs.cache-hit != 'true'
@@ -192,7 +192,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: dev
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Setup git committer
