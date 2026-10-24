@@ -24,11 +24,10 @@ jobs:
     env:
       ISSUE_NUMBER: ${{ github.event.issue.number || github.event.client_payload.issue_number }}
     outputs:
-      sha: ${{ steps.checkout.outputs.commit }}
+      sha: ${{ steps.save.outputs.sha }}
 
     steps:
       - name: Checkout code
-        id: checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
           ref: dev
@@ -73,8 +72,10 @@ jobs:
           fi
 
       - name: Save changes
+        id: save
         run: |
           set -euo pipefail
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           git add -A
           git diff --cached --binary > "$RUNNER_TEMP/out/changes.patch"
           jq -r .title "$ISSUE_FILE" > "$RUNNER_TEMP/out/title.txt"
