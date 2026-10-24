@@ -28,7 +28,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: dev
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Load issue
@@ -43,8 +43,8 @@ jobs:
       - name: Install opencode
         run: curl -fsSL https://opencode.ai/install | bash
 
-      - name: Move git metadata out of the workspace
-        run: mv .git "$RUNNER_TEMP/repo.git"
+      - name: Keep a clean copy of git metadata
+        run: cp -a .git "$RUNNER_TEMP/repo.git"
 
       - name: Run issue fixer
         env:
@@ -101,7 +101,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
         with:
-          ref: dev
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       - name: Setup git committer
