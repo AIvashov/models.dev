@@ -114,8 +114,22 @@ jobs:
         id: apply
         run: |
           set -euo pipefail
+          STAGE="$RUNNER_TEMP/stage"
+          mkdir "$STAGE"
+          tar -xf "$RUNNER_TEMP/out/catalog.tar" -C "$STAGE"
+          bad="$({
+            find "$STAGE" -mindepth 1 -maxdepth 1 ! -name models ! -name providers
+            find "$STAGE" \( -name .git -o -name '.git*' \)
+            find "$STAGE" ! -type f ! -type d ! -type l
+            find "$STAGE" -type f -links +1
+          } | head -20)"
+          if [ -n "$bad" ]; then
+            echo "Unexpected entries in the agent's files:" >&2
+            echo "$bad" >&2
+            exit 1
+          fi
           rm -rf models providers
-          tar -xf "$RUNNER_TEMP/out/catalog.tar"
+          cp -a "$STAGE/models" "$STAGE/providers" .
           git add -A models providers
           if git diff --cached --quiet; then
             echo "changed=false" >> "$GITHUB_OUTPUT"
