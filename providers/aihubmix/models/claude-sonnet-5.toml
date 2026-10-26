@@ -1,3 +1,4 @@
+# API: @aihubmix/ai-sdk-provider sends claude-* models to Anthropic Messages (POST https://aihubmix.com/v1/messages with x-api-key), which keeps cache_control breakpoints and signed thinking. https://docs.aihubmix.com/cn/api/Anthropic-Compatible.md
 # Prices, limits and input modalities: AIHubMix catalog GET https://aihubmix.com/api/v1/models (2026-10-21).
 # Cache: https://docs.aihubmix.com/cn/practices/prompt-caching.md
 # Toggle: see provider.toml (Chat `reasoning_effort = none`, Messages `thinking.type = disabled`).
@@ -10,8 +11,11 @@ structured_output = true
 temperature = false
 cache = { explicit = { ttl = ["5m", "1h"], targets = ["tools", "system", "messages"] } }
 
-[api.chat-completions]
+[api.messages]
+sdk = { opencodeai = "@opencode/ai/providers/anthropic-compatible" }
 legacy_interleaved = true
+
+[api.chat-completions]
 
 [cost.text.input]
 price = 2

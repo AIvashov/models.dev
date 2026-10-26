@@ -1,3 +1,4 @@
+# API: @aihubmix/ai-sdk-provider sends claude-* models to Anthropic Messages (POST https://aihubmix.com/v1/messages with x-api-key), which keeps cache_control breakpoints and signed thinking. https://docs.aihubmix.com/cn/api/Anthropic-Compatible.md
 # Toggle: $.thinking.type = "enabled"|"disabled"|"adaptive" on the Anthropic-compatible
 # /v1/messages path; $.enable_thinking = true|false on /v1/chat/completions.
 # Effort: $.output_config.effort on /v1/messages; $.reasoning_effort on /v1/chat/completions.
@@ -16,8 +17,11 @@ reasoning = { supported = true, toggle = true, effort = ["low", "medium", "high"
 structured_output = true
 cache = { explicit = { ttl = ["5m", "1h"], targets = ["tools", "system", "messages"] } }
 
-[api.chat-completions]
+[api.messages]
+sdk = { opencodeai = "@opencode/ai/providers/anthropic-compatible" }
 legacy_interleaved = true
+
+[api.chat-completions]
 
 [cost.text.input]
 price = 11

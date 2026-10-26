@@ -1,3 +1,4 @@
+# API: @aihubmix/ai-sdk-provider sends claude-* models to Anthropic Messages (POST https://aihubmix.com/v1/messages with x-api-key), which keeps cache_control breakpoints and signed thinking. https://docs.aihubmix.com/cn/api/Anthropic-Compatible.md
 # Native Messages prefers $.thinking.type = "adaptive" with $.output_config.effort = "low"|"medium"|"high"|"max"; enabled budget_tokens >= 1024 is deprecated and must be < $.max_tokens. https://docs.aihubmix.com/cn/api/Claude-Native (accessed 2026-06-25)
 # Prices, limits and input modalities: AIHubMix catalog GET https://aihubmix.com/api/v1/models (2026-10-21).
 # Cache: https://docs.aihubmix.com/cn/practices/prompt-caching.md
@@ -10,8 +11,11 @@ reasoning = { supported = true, toggle = true, effort = ["low", "medium", "high"
 structured_output = true
 cache = { explicit = { ttl = ["5m", "1h"], targets = ["tools", "system", "messages"], min_tokens = 4_096 } }
 
-[api.chat-completions]
+[api.messages]
+sdk = { opencodeai = "@opencode/ai/providers/anthropic-compatible" }
 legacy_interleaved = true
+
+[api.chat-completions]
 
 [cost.text.input]
 price = 5
