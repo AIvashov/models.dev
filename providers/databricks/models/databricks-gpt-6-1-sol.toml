@@ -1,6 +1,6 @@
 # Models, inputs and lifecycle (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models, https://docs.databricks.com/aws/en/machine-learning/retired-models-policy
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
-# Effort (values listed for this endpoint): Chat `reasoning_effort` / Responses `reasoning.effort` = none|low|medium|high|xhigh|max; no default is documented.
+# Effort (values listed for this endpoint): Chat `reasoning_effort` / Responses `reasoning.effort` = none|low|medium|high|xhigh|max; no default is documented. The databricks-gpt-6-1-sol row in query-reason-models lists `none` explicitly, unlike OpenAI's own API for this model.
 # Pricing (accessed 2026-10-28): DBU rates from https://www.databricks.com/product/pricing/proprietary-foundation-model-serving x USD 0.070/DBU (`prop_model_serving` in https://www.databricks.com/en-pricing-assets/data/pricing/cards.json: Anthropic, Google and OpenAI on AWS Premium/Enterprise, every region).
 # Standard DBU per 1M input/output/cache-read/cache-write tokens: 28.571/142.857/1.429/35.714 short and 57.143/214.286/2.857/71.429 long.
 # The pricing page marks this model with a 10% DBU uplift when regional processing (data residency) is enabled: the 1.1x multiplier when region is not global.

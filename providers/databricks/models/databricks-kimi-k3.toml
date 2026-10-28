@@ -1,7 +1,7 @@
 # Models, inputs and lifecycle (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models, https://docs.databricks.com/aws/en/machine-learning/retired-models-policy
 # Inputs: supported-models lists text and image; images are JPEG, PNG, WebP, GIF, up to 30 per API request (https://docs.databricks.com/aws/en/machine-learning/model-serving/query-vision-models). Video and other image formats are dropped.
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
-# Effort: Chat `reasoning_effort` = none|low|high|max; `max` is the default, other values fall back to `max`, and `none` turns reasoning off.
+# Effort: Chat `reasoning_effort` = low|high|max; `max` is the default and other values fall back to `max` (the Kimi K3 line in query-reason-models). The shared "Hybrid reasoning" heading says `none` gives instant replies, but the per-model line contradicts it for Kimi K3, so `none` is left out, matching the lab (always thinks).
 # Pricing (accessed 2026-10-28): DBU rates from https://www.databricks.com/product/pricing/foundation-model-serving x USD 0.070/DBU (`foundation_model_apis` in https://www.databricks.com/en-pricing-assets/data/pricing/cards.json, AWS US East (N. Virginia); other regions are USD 0.070-0.112/DBU, not modeled).
 # Standard DBU per 1M input/output/cache-read tokens: 42.857/214.286/4.286.
 # The pricing page marks this model with a 10% DBU uplift when regional processing (data residency) is enabled: the 1.1x multiplier when region is not global.
@@ -19,7 +19,7 @@ input = ["text", "image/jpeg", "image/png", "image/gif", "image/webp"]
 output = ["text"]
 
 [capabilities]
-reasoning = { supported = true, effort = ["none", "low", "high", "max"] }
+reasoning = { supported = true, effort = ["low", "high", "max"] }
 structured_output = true
 cache = { implicit = true }
 service_tier = ["priority"]

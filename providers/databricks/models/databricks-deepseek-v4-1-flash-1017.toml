@@ -1,7 +1,7 @@
 # Models, inputs and lifecycle (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models, https://docs.databricks.com/aws/en/machine-learning/retired-models-policy
 # Images: JPEG, PNG, WebP, GIF (first frame only), up to 30 per API request and 67,108,864 pixels per image (https://docs.databricks.com/aws/en/machine-learning/model-serving/query-vision-models); formats match the lab.
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
-# Effort: Chat `reasoning_effort` = none|low|high|xhigh|max; `max` is the default, minimal maps to low, medium maps to high, and none (or disabled) turns reasoning off.
+# Effort: Chat `reasoning_effort` = none|low|high|xhigh|max per the DeepSeek V4.1 Flash (1017) line in query-reason-models: it "accepts low, high, xhigh, or max (default)", minimal maps to low and medium to high (xhigh is not remapped), and "none" or "disabled" disables reasoning, so off is effort none with no separate toggle.
 # Pricing (accessed 2026-10-28): DBU rates from https://www.databricks.com/product/pricing/foundation-model-serving x USD 0.070/DBU (`foundation_model_apis` in https://www.databricks.com/en-pricing-assets/data/pricing/cards.json, AWS US East (N. Virginia); other regions are USD 0.070-0.112/DBU, not modeled).
 # Standard DBU per 1M input/output/cache-read tokens: 4.286/17.143/0.100.
 # Priority: the pricing page and the priority-mode page list priority only for the 0910 release (databricks-deepseek-v4-1-flash), so service_tier is not recorded.

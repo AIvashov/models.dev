@@ -1,5 +1,5 @@
 # Models, inputs and lifecycle (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models, https://docs.databricks.com/aws/en/machine-learning/retired-models-policy
-# Inputs: supported-models lists text and image; images are JPEG, PNG, WebP, GIF, up to 30 per API request (https://docs.databricks.com/aws/en/machine-learning/model-serving/query-vision-models). Video and PDF are dropped.
+# Inputs: supported-models lists text and image; the databricks-glm-5-3-flash row in https://docs.databricks.com/aws/en/machine-learning/model-serving/query-vision-models lists JPEG, PNG, WebP and GIF, up to 30 per API request. Video and PDF are dropped.
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
 # Effort: Chat `reasoning_effort` = low|high|max; `max` is the default, other values fall back to `max`, and `none` returns an error.
 # Limits: supported-models gives a context length of 1,048,576 tokens.

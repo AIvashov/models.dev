@@ -4,7 +4,7 @@
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
 # Pricing (accessed 2026-10-28): DBU rates from https://www.databricks.com/product/pricing/proprietary-foundation-model-serving x USD 0.070/DBU (`prop_model_serving` in https://www.databricks.com/en-pricing-assets/data/pricing/cards.json: Anthropic, Google, OpenAI and SpaceXAI on AWS Premium/Enterprise, every region).
 # Standard DBU per 1M input/output/cache-read/5m-write/1h-write tokens: 1.429/7.143/0.143/1.786/2.857 short and 7.143/35.714/0.714/8.929/14.286 long.
-# Long context: the pricing page doesn't state the threshold; Anthropic's long-context rate for this model starts above 100K input tokens (providers/anthropic).
+# Long context: the pricing page lists separate short- and long-context rows but doesn't state the threshold (it doesn't for the GPT rows either, which use OpenAI's 272K). This uses the lab's boundary: Anthropic's long-context rate for this model starts above 100K input tokens (providers/anthropic), and the Databricks long/short ratios match Anthropic's.
 # The pricing page marks this model with a 10% DBU uplift when regional processing (data residency) is enabled: the 1.1x multiplier when region is not global.
 # Batch inference is billed per DBU-hour, not per token; not modeled.
 # Images: JPEG, PNG, GIF, WebP; up to 100 per API request, larger than 8000x8000 px rejected (https://docs.databricks.com/aws/en/machine-learning/model-serving/query-vision-models).
