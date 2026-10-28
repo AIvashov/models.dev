@@ -1,6 +1,6 @@
 # Models, inputs and lifecycle (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models, https://docs.databricks.com/aws/en/machine-learning/retired-models-policy
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
-# Budget: Chat `thinking = { type = "enabled", budget_tokens = N }`; N >= 1024 and must be less than `max_tokens`.
+# Budget: Chat `thinking = { type = "enabled", budget_tokens = N }`; N >= 1024 and must be less than `max_tokens`. The reasoning doc lists this endpoint by name under "Hybrid reasoning" with `thinking` + `budget_tokens` (unlike the adaptive-only Opus 5.5 / Haiku 5.5 rows), so the budget control is the documented Databricks surface, not the lab's effort ladder.
 # Pricing (accessed 2026-10-28): DBU rates from https://www.databricks.com/product/pricing/proprietary-foundation-model-serving x USD 0.070/DBU (`prop_model_serving` in https://www.databricks.com/en-pricing-assets/data/pricing/cards.json: Anthropic, Google, OpenAI and SpaceXAI on AWS Premium/Enterprise, every region).
 # Standard DBU per 1M input/output/cache-read/5m-write/1h-write tokens: 71.429/357.143/7.143/89.286/142.857 (the Opus 4.5-5 row).
 # The pricing page marks this model with a 10% DBU uplift when regional processing (data residency) is enabled: the 1.1x multiplier when region is not global.

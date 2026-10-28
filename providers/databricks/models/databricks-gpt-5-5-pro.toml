@@ -1,6 +1,6 @@
 # Models, inputs and lifecycle (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/foundation-model-apis/supported-models, https://docs.databricks.com/aws/en/machine-learning/retired-models-policy
 # Reasoning (accessed 2026-10-28): https://docs.databricks.com/aws/en/machine-learning/model-serving/query-reason-models
-# Effort: Responses `reasoning.effort`; Databricks sets `medium` as the default but lists no per-model values. medium|high is the overlap of the low|medium|high set used for other Databricks GPT-5 files and OpenAI's own medium|high|xhigh for this model; untested.
+# Effort: Responses `reasoning.effort` = medium|high|xhigh, the lab set from providers/openai/models/gpt-5.5-pro.toml; Databricks sets `medium` as the default and lists no per-model values (Responses passes OpenAI parameters through); untested.
 # Pricing (accessed 2026-10-28): DBU rates from https://www.databricks.com/product/pricing/proprietary-foundation-model-serving x USD 0.070/DBU (`prop_model_serving` in https://www.databricks.com/en-pricing-assets/data/pricing/cards.json: Anthropic, Google, OpenAI and SpaceXAI on AWS Premium/Enterprise, every region).
 # Standard DBU per 1M input/output tokens: 428.571/2,571.43 short and 857.143/3,857.14 long; no cache-read, cache-write or priority rate is listed.
 # The pricing page marks this model with a 10% DBU uplift when regional processing (data residency) is enabled: the 1.1x multiplier when region is not global.
@@ -16,7 +16,7 @@ schema = 2
 base_model = "openai/gpt-5.5-pro"
 
 [capabilities]
-reasoning = { supported = true, effort = ["medium", "high"] }
+reasoning = { supported = true, effort = ["medium", "high", "xhigh"] }
 structured_output = true
 store = false
 cache = { implicit = { ttl = ["24h"] } }
